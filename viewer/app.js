@@ -551,6 +551,45 @@
     window.scrollTo({ top: 0, behavior: "instant" });
   }
 
+  function injectConceptSvg(bodyEl, docId) {
+    const svgMap = {
+      "G-03": {
+        title: "財務諸表5要素と B/S・P/L 連動構造（資産負債アプローチ）",
+        svg: '<svg viewBox="0 0 680 185" class="concept-svg" role="img" aria-label="5要素連動図"><rect x="10" y="12" width="315" height="160" rx="10" fill="var(--surface-alt)" stroke="var(--accent)" stroke-width="1.5"/><text x="167" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent)">B/S（ストック：財政状態）</text><rect x="24" y="48" width="136" height="110" rx="6" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="92" y="106" text-anchor="middle" font-size="14" font-weight="700" fill="var(--text)">資産（借方＋）</text><rect x="172" y="48" width="138" height="48" rx="6" fill="var(--surface)" stroke="var(--border)"/><text x="241" y="77" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text)">負債（貸方＋）</text><rect x="172" y="106" width="138" height="52" rx="6" fill="var(--emerald-soft)" stroke="var(--emerald)"/><text x="241" y="137" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text)">純資産（貸方＋）</text><rect x="355" y="12" width="315" height="160" rx="10" fill="var(--surface-alt)" stroke="var(--emerald)" stroke-width="1.5"/><text x="512" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="var(--emerald)">P/L（フロー：経営成績）</text><rect x="369" y="48" width="136" height="72" rx="6" fill="var(--danger-soft)" stroke="var(--danger)"/><text x="437" y="88" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text)">費用（借方＋）</text><rect x="369" y="126" width="136" height="32" rx="6" fill="var(--emerald-soft)" stroke="var(--emerald)"/><text x="437" y="147" text-anchor="middle" font-size="12" font-weight="700" fill="var(--text)">当期純利益</text><rect x="517" y="48" width="138" height="110" rx="6" fill="var(--surface)" stroke="var(--emerald)"/><text x="586" y="106" text-anchor="middle" font-size="14" font-weight="700" fill="var(--text)">収益（貸方＋）</text><path d="M 369 142 C 335 142, 335 132, 312 132" fill="none" stroke="var(--emerald)" stroke-width="2.5" stroke-dasharray="4 3"/></svg>'
+      },
+      "L2I-01": {
+        title: "工業簿記 原価勘定連絡フロー（投入＝産出の均衡）",
+        svg: '<svg viewBox="0 0 680 175" class="concept-svg" role="img" aria-label="原価勘定連絡図"><rect x="14" y="16" width="120" height="38" rx="7" fill="var(--surface-alt)" stroke="var(--border)"/><text x="74" y="40" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text)">材料費</text><rect x="14" y="68" width="120" height="38" rx="7" fill="var(--surface-alt)" stroke="var(--border)"/><text x="74" y="92" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text)">労務費・経費</text><rect x="14" y="120" width="145" height="38" rx="7" fill="var(--surface-alt)" stroke="var(--amber)"/><text x="86" y="144" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--text)">製造間接費(予定)</text><rect x="235" y="42" width="130" height="86" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.8"/><text x="300" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="var(--accent)">仕掛品</text><text x="300" y="102" text-anchor="middle" font-size="11" fill="var(--text-muted)">(直接費＋配賦)</text><rect x="410" y="54" width="110" height="62" rx="8" fill="var(--emerald-soft)" stroke="var(--emerald)"/><text x="465" y="90" text-anchor="middle" font-size="14" font-weight="700" fill="var(--text)">製品</text><rect x="560" y="54" width="106" height="62" rx="8" fill="var(--surface-alt)" stroke="var(--border)"/><text x="613" y="90" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text)">売上原価</text><path d="M134 35 L235 66 M134 87 L235 87 M159 139 L235 110 M365 85 L410 85 M520 85 L560 85" stroke="var(--accent)" stroke-width="2" fill="none"/></svg>'
+      },
+      "L2C-05": {
+        title: "新リース会計基準（ASBJ第34号）オンバランス構造",
+        svg: '<svg viewBox="0 0 680 165" class="concept-svg" role="img" aria-label="新リースオンバランス図"><rect x="16" y="18" width="200" height="128" rx="10" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="116" y="44" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent)">契約開始時 (B/S両建て)</text><text x="116" y="78" text-anchor="middle" font-size="12.5" fill="var(--text)">(借) 使用権資産（現在価値）</text><text x="116" y="106" text-anchor="middle" font-size="12.5" fill="var(--text)">(貸) リース負債（現在価値）</text><rect x="242" y="18" width="205" height="128" rx="10" fill="var(--surface-alt)" stroke="var(--border)"/><text x="344" y="44" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text)">毎期支払時 (利息法分解)</text><text x="344" y="78" text-anchor="middle" font-size="12.5" fill="var(--text)">支払額 ＝ 利息費用(営業外)</text><text x="344" y="106" text-anchor="middle" font-size="12.5" fill="var(--text)">＋ リース負債元本返済</text><rect x="472" y="18" width="192" height="128" rx="10" fill="var(--emerald-soft)" stroke="var(--emerald)"/><text x="568" y="44" text-anchor="middle" font-size="13" font-weight="700" fill="var(--emerald)">決算時 (費用配分)</text><text x="568" y="78" text-anchor="middle" font-size="12.5" fill="var(--text)">使用権資産をリース期間等で</text><text x="568" y="106" text-anchor="middle" font-size="12.5" fill="var(--text)">減価償却費（営業費用）へ</text></svg>'
+      },
+      "L2C-10": {
+        title: "税効果会計：一時差異と DTA / DTL 判定マップ",
+        svg: '<svg viewBox="0 0 680 155" class="concept-svg" role="img" aria-label="税効果マップ"><rect x="16" y="16" width="310" height="122" rx="10" fill="var(--emerald-soft)" stroke="var(--emerald)"/><text x="171" y="44" text-anchor="middle" font-size="13.5" font-weight="700" fill="var(--emerald)">将来減算一時差異 → 繰延税金資産 (DTA)</text><text x="171" y="74" text-anchor="middle" font-size="12" fill="var(--text)">会計が先に費用認識（貸倒超過・減損等）</text><text x="171" y="102" text-anchor="middle" font-size="12" fill="var(--text)">＝ 税金の前払い（将来課税所得を減らす）</text><rect x="354" y="16" width="310" height="122" rx="10" fill="var(--danger-soft)" stroke="var(--danger)"/><text x="509" y="44" text-anchor="middle" font-size="13.5" font-weight="700" fill="var(--danger)">将来加算一時差異 → 繰延税金負債 (DTL)</text><text x="509" y="74" text-anchor="middle" font-size="12" fill="var(--text)">評価益・圧縮積立金等で将来課税が増える</text><text x="509" y="102" text-anchor="middle" font-size="12" fill="var(--text)">＝ 税金の後払い（将来課税所得を増やす）</text></svg>'
+      },
+      "L2C-12": {
+        title: "連結会計：支配獲得日と持分変動（傘の中 vs ライン越え）",
+        svg: '<svg viewBox="0 0 680 160" class="concept-svg" role="img" aria-label="連結会計構造図"><line x1="40" y1="88" x2="640" y2="88" stroke="var(--accent)" stroke-width="3"/><circle cx="130" cy="88" r="8" fill="var(--accent)"/><text x="130" y="56" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--accent)">支配獲得日</text><text x="130" y="118" text-anchor="middle" font-size="11.5" fill="var(--text)">全面時価評価＋のれん</text><circle cx="340" cy="88" r="8" fill="var(--emerald)"/><text x="340" y="56" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--emerald)">連結決算（毎期）</text><text x="340" y="118" text-anchor="middle" font-size="11.5" fill="var(--text)">のれん償却・成果連結・NCI按分</text><circle cx="550" cy="88" r="8" fill="var(--amber)"/><text x="550" y="56" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--amber)">追加取得・一部売却</text><text x="550" y="118" text-anchor="middle" font-size="11.5" fill="var(--text)">支配継続＝資本剰余金で調整</text></svg>'
+      }
+    };
+    svgMap["L3-01"] = svgMap["G-03"];
+    svgMap["CS-03"] = svgMap["L2I-01"];
+    svgMap["L1C-08"] = svgMap["L2C-05"];
+    svgMap["L1C-11"] = svgMap["L2C-10"];
+    svgMap["L1C-13"] = svgMap["L2C-12"];
+
+    const item = svgMap[docId];
+    if (!item) return;
+    const h1 = bodyEl.querySelector("h1");
+    const box = document.createElement("div");
+    box.className = "concept-svg-card";
+    box.innerHTML = '<div class="concept-svg-title">📐 ' + escapeHtml(item.title) + "</div>" + item.svg;
+    if (h1 && h1.nextSibling) bodyEl.insertBefore(box, h1.nextSibling);
+    else bodyEl.prepend(box);
+  }
+
   function openDoc(docId, pushHash = true) {
     if (studioMode !== "reader") switchStudioMode("reader");
     const doc = DATA.items.find((it) => it.id === docId) || DATA.items[0];
@@ -610,6 +649,7 @@
     const body = document.getElementById("articleBody");
     if (doc.available) {
       body.innerHTML = parseMarkdown(doc.markdown);
+      injectConceptSvg(body, doc.id);
       enhanceArticle(doc);
       renderOptionalRichMedia();
     } else {
@@ -812,7 +852,7 @@
       saveState();
     };
 
-    // Export / Import state
+    // Export / Import state + Sync Code + Service Worker
     document.getElementById("exportStateBtn").onclick = () => {
       const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -838,6 +878,71 @@
       };
       reader.readAsText(file);
     };
+
+    // Sync Code modal (PC <-> iPhone)
+    const syncBtn = document.getElementById("syncCodeBtn");
+    if (syncBtn) {
+      syncBtn.onclick = () => {
+        const panel = document.getElementById("syncPanel");
+        const ta = document.getElementById("syncCodeTextarea");
+        const msg = document.getElementById("syncStatusMsg");
+        if (panel) panel.classList.toggle("hidden");
+        if (ta && !panel.classList.contains("hidden")) {
+          const bytes = new TextEncoder().encode(JSON.stringify(state));
+          let bin = "";
+          bytes.forEach((b) => { bin += String.fromCharCode(b); });
+          ta.value = "BOKI1:" + btoa(bin);
+          if (msg) msg.textContent = "現在の学習記録から同期コードを生成しました。";
+        }
+      };
+    }
+    const copySyncBtn = document.getElementById("copySyncCodeBtn");
+    if (copySyncBtn) {
+      copySyncBtn.onclick = () => {
+        const ta = document.getElementById("syncCodeTextarea");
+        const msg = document.getElementById("syncStatusMsg");
+        if (!ta) return;
+        ta.select();
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(ta.value).then(() => {
+            if (msg) msg.textContent = "✓ クリップボードにコピーしました！別端末で貼り付けてください。";
+          }).catch(() => {
+            document.execCommand("copy");
+            if (msg) msg.textContent = "✓ コピーしました！";
+          });
+        } else {
+          document.execCommand("copy");
+          if (msg) msg.textContent = "✓ コピーしました！";
+        }
+      };
+    }
+    const applySyncBtn = document.getElementById("applySyncCodeBtn");
+    if (applySyncBtn) {
+      applySyncBtn.onclick = () => {
+        const ta = document.getElementById("syncCodeTextarea");
+        const msg = document.getElementById("syncStatusMsg");
+        if (!ta) return;
+        try {
+          const raw = ta.value.trim();
+          const b64 = raw.startsWith("BOKI1:") ? raw.slice(6) : raw;
+          const bin = atob(b64);
+          const bytes = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          const parsed = JSON.parse(new TextDecoder().decode(bytes));
+          Object.assign(state, parsed);
+          saveState();
+          openDoc(currentDocId, false);
+          if (msg) msg.textContent = "✓ 学習記録を復元しました！";
+        } catch (err) {
+          if (msg) msg.textContent = "✕ 同期コードの形式が正しくありません。";
+        }
+      };
+    }
+
+    // Register Offline PWA Service Worker on http/https
+    if ("serviceWorker" in navigator && window.location.protocol.startsWith("http")) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
 
     window.addEventListener("hashchange", () => {
       const h = window.location.hash.replace(/^#/, "");

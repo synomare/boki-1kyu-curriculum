@@ -1185,6 +1185,54 @@ body.focus-core-mode .hook-card .focus-note { display: block; }
 }
 .drill-explanation-box .exp-body { margin-top: 6px; }
 
+/* Concept SVG Diagrams, Calc Dojo, Theory Dojo & CBT Runner */
+.concept-svg-card {
+  margin: 14px 0 20px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+.concept-svg-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.concept-svg { width: 100%; height: auto; display: block; }
+.dojo-main-tabs { margin-bottom: 14px; flex-wrap: wrap; }
+.calc-input-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.calc-num-label { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; }
+.calc-unit-pill { font-size: 13.5px; font-weight: 700; color: var(--text-muted); }
+.theory-choices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.theory-choice-btn {
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+}
+.theory-choice-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
+.theory-choice-btn.choice-correct { border-color: var(--emerald); background: var(--emerald-soft); color: var(--emerald); }
+.theory-choice-btn.choice-wrong { border-color: var(--danger); background: var(--danger-soft); color: var(--danger); }
+.cbt-q-card { margin-bottom: 12px; }
+
 @media (max-width: 900px) {
   .sim-grid { grid-template-columns: 1fr; }
   .wide-studio-mode .app-shell { grid-template-columns: 1fr; }

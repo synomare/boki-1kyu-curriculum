@@ -10,7 +10,7 @@ if ([string]::IsNullOrWhiteSpace($RootDir)) {
 }
 
 $viewerDir = Join-Path $RootDir "viewer"
-$requiredFiles = @("index.html", "styles.css", "app.js", "studio_tools.js", "curriculum_data.js")
+$requiredFiles = @("index.html", "styles.css", "app.js", "studio_tools.js", "curriculum_data.js", "sw.js", "manifest.webmanifest", "apple-touch-icon.png", "icon.svg")
 $errors = New-Object System.Collections.Generic.List[string]
 
 foreach ($f in $requiredFiles) {
@@ -66,6 +66,14 @@ if (Test-Path $dataPath) {
                     }
                 }
             }
+            if ($null -eq $parsed.calcDrills -or $parsed.calcDrills.Count -lt 30) {
+                $cc = if ($null -eq $parsed.calcDrills) { 0 } else { $parsed.calcDrills.Count }
+                $errors.Add("Expected at least 30 calcDrills, found $cc")
+            }
+            if ($null -eq $parsed.theoryDrills -or $parsed.theoryDrills.Count -lt 100) {
+                $tc = if ($null -eq $parsed.theoryDrills) { 0 } else { $parsed.theoryDrills.Count }
+                $errors.Add("Expected at least 100 theoryDrills, found $tc")
+            }
         } catch {
             $errors.Add("Failed to parse JSON inside curriculum_data.js: $_")
         }
@@ -83,7 +91,7 @@ if ((Test-Path $htmlPath) -and (Test-Path $appPath) -and (Test-Path $toolsPath))
 
     $requiredIds = @(
         "sidebar", "mainContent", "articleBody", "tocNav", "searchInput",
-        "timerPanel", "scratchPanel", "themeToggle",
+        "timerPanel", "scratchPanel", "syncPanel", "syncCodeBtn", "themeToggle",
         "readerView", "drillView", "simView", "analyticsView", "cheatView"
     )
     foreach ($domId in $requiredIds) {

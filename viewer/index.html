@@ -75,6 +75,7 @@
       </a>
       <button id="themeToggle" class="icon-btn" title="ライト／ダークテーマ切替" aria-label="テーマ切替">🌙</button>
       <div class="data-menu">
+        <button id="syncCodeBtn" class="icon-btn" title="PC⇔iPhone 進捗ワンタップ同期コード">🔄</button>
         <button id="exportStateBtn" class="icon-btn" title="学習記録をJSONで書き出す">⬇</button>
         <label class="icon-btn import-label" title="学習記録JSONを読み込む">
           ⬆<input id="importStateInput" type="file" accept="application/json" hidden />
@@ -182,6 +183,23 @@
         <button id="clearScratchBtn" class="tpl-btn danger">クリア</button>
       </div>
       <textarea id="scratchTextarea" class="scratch-textarea" placeholder="ここにボックス図・タイムライン・途中式を書きながら演習できます..."></textarea>
+    </div>
+  </section>
+
+  <!-- Cross-device Sync Code Panel -->
+  <section id="syncPanel" class="floating-panel wide-panel hidden" aria-label="PC・iPhone 進捗同期コード">
+    <div class="panel-header">
+      <span>🔄 PC ⇔ iPhone 進捗ワンタップ同期</span>
+      <button class="panel-close" data-close="syncPanel">✕</button>
+    </div>
+    <div class="panel-body">
+      <p style="font-size:12.5px;color:var(--text-muted);margin:0 0 8px;">下の同期コードをコピーして別端末に貼り付けると、チェック・復習日・SRS・暗記ピン留めをそのまま引き継げます。</p>
+      <textarea id="syncCodeTextarea" class="scratch-textarea" style="min-height:90px;" placeholder="BOKI1:... 同期コードをここに貼り付け"></textarea>
+      <div class="tpl-bar" style="margin-top:8px;">
+        <button id="copySyncCodeBtn" class="primary-btn">📋 現在の記録をコピー</button>
+        <button id="applySyncCodeBtn" class="secondary-btn">📥 貼り付けたコードを復元</button>
+      </div>
+      <div id="syncStatusMsg" style="font-size:12px;margin-top:6px;color:var(--emerald);"></div>
     </div>
   </section>
 

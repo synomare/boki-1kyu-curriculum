@@ -6,7 +6,7 @@
     { "id": "L2I", "name": "Part III：簿記2級 工業簿記", "shortName": "2級工", "total": 8 },
     { "id": "L1C", "name": "Part IV：簿記1級 商業簿記・会計学", "shortName": "1級商", "total": 15 },
     { "id": "L1I", "name": "Part V：簿記1級 工業簿記・原価計算", "shortName": "1級工", "total": 10 },
-    { "id": "exam", "name": "Part VI：過去問攻略・実戦模試・理論論証", "shortName": "実戦", "total": 5 },
+    { "id": "exam", "name": "Part VI：過去問攻略・実戦模試・理論論証", "shortName": "実戦", "total": 8 },
     { "id": "cheat", "name": "Part VII：本質チートシート＆超高速暗記マスター", "shortName": "暗記", "total": 6 }
   ],
   "lines": [
@@ -89,6 +89,9 @@
     { "id": "EX-03", "part": "exam", "path": "06_exam_mastery/03_mock_level2.md", "title": "2027年新区分対応・簿記2級 実戦総合模試（90分・100点）", "line": ["Line A", "Line B", "Line C", "Line D", "Line E", "Line F"], "formats": ["型01", "型02", "型04", "型05", "型06", "型07", "型09", "型10"], "minutes": 120, "importance": "★★★", "is2027New": true },
     { "id": "EX-04", "part": "exam", "path": "06_exam_mastery/04_mock_level1.md", "title": "2027年新区分対応・簿記1級 実戦総合模試（4科目・3時間・100点）", "line": ["Line A", "Line B", "Line C", "Line D", "Line E", "Line F"], "formats": ["型01", "型02", "型04", "型06", "型07", "型08", "型09", "型10"], "minutes": 210, "importance": "★★★", "is2027New": true },
     { "id": "EX-05", "part": "exam", "path": "06_exam_mastery/05_theory_arguments.md", "title": "1級会計学・原価計算 頻出理論論証＆穴埋めスーパー50選", "line": ["Line G", "Line A", "Line B", "Line C", "Line D", "Line E", "Line F"], "formats": [], "minutes": 90, "importance": "★★★", "is2027New": true },
+    { "id": "EX-06", "part": "exam", "path": "06_exam_mastery/06_mock_level3_set2.md", "title": "2027年新区分対応・簿記3級 実戦総合模試 第2回（60分・100点）", "line": ["Line A", "Line B", "Line C", "Line D", "Line E"], "formats": ["型01", "型02", "型03"], "minutes": 90, "importance": "★★★", "is2027New": true },
+    { "id": "EX-07", "part": "exam", "path": "06_exam_mastery/07_mock_level2_set2.md", "title": "2027年新区分対応・簿記2級 実戦総合模試 第2回（90分・100点）", "line": ["Line A", "Line B", "Line C", "Line D", "Line E", "Line F"], "formats": ["型01", "型02", "型04", "型05", "型06", "型09", "型10"], "minutes": 120, "importance": "★★★", "is2027New": true },
+    { "id": "EX-08", "part": "exam", "path": "06_exam_mastery/08_mock_level1_comprehensive.md", "title": "1級 大型総合問題「連結精算表＋連結CF＋非累加法＋取替NPV」完全実況中継", "line": ["Line C", "Line D", "Line E", "Line F"], "formats": ["型02", "型07", "型09", "型10"], "minutes": 120, "importance": "★★★", "is2027New": true },
 
     { "id": "CS-01", "part": "cheat", "path": "07_cheatsheets/CS-01_standards_and_rules_matrix.md", "title": "会計基準・分類・数値基準パーフェクト比較マトリクス", "line": ["Line G", "Line A", "Line B", "Line C", "Line D", "Line E"], "formats": [], "minutes": 30, "importance": "★★★", "is2027New": true },
     { "id": "CS-02", "part": "cheat", "path": "07_cheatsheets/CS-02_commercial_journal_triggers.md", "title": "商業簿記・会計学 必須仕訳トリガー＆判断フローチャート集", "line": ["Line A", "Line B", "Line C", "Line D", "Line E"], "formats": ["型01", "型02", "型04", "型07", "型09"], "minutes": 30, "importance": "★★★", "is2027New": true },

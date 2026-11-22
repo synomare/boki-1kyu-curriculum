@@ -15,6 +15,7 @@
    * 1. JOURNAL DRILL DOJO v2 (⚔️ 仕訳道場：入力自動採点 & 高速フラッシュ)
    * ========================================================================= */
   const drillState = {
+    dojoTab: "journal", // "journal" | "calc" | "theory" | "cbt"
     mode: "input", // "input" | "flash"
     part: "all",
     queueMode: "all", // "all" | "unmastered" | "weak"
@@ -338,9 +339,51 @@
         : '<span class="meta-pill danger-pill">不一致 (差額 ' + fmtYen(diff) + ")</span>");
   }
 
+  function renderDojoTabBar() {
+    const jCnt = (DATA.drills || []).length;
+    const cCnt = (DATA.calcDrills || []).length;
+    const tCnt = (DATA.theoryDrills || []).length;
+    const tabs = [
+      { id: "journal", label: "✍️ 仕訳道場 (" + jCnt + ")" },
+      { id: "calc", label: "🏭 工簿・原計 数値道場 (" + cCnt + ")" },
+      { id: "theory", label: "🧠 理論 穴埋め道場 (" + tCnt + ")" },
+      { id: "cbt", label: "📝 本番CBT模試" }
+    ];
+    let h = '<div class="sim-tabs dojo-main-tabs">';
+    tabs.forEach((t) => {
+      h += '<button type="button" class="sim-tab-btn dojo-tab-btn' + (drillState.dojoTab === t.id ? " active" : "") + '" data-dojotab="' + t.id + '">' + escapeHtml(t.label) + "</button>";
+    });
+    h += "</div>";
+    return h;
+  }
+
+  function bindDojoTabBar(root) {
+    root.querySelectorAll(".dojo-tab-btn").forEach((b) => {
+      b.onclick = () => {
+        stopBlitz();
+        drillState.dojoTab = b.dataset.dojotab;
+        renderDrillView();
+      };
+    });
+  }
+
   function renderDrillView() {
     const root = document.getElementById("drillView");
     if (!root) return;
+
+    if (drillState.dojoTab === "calc") {
+      renderCalcDojo(root);
+      return;
+    }
+    if (drillState.dojoTab === "theory") {
+      renderTheoryDojo(root);
+      return;
+    }
+    if (drillState.dojoTab === "cbt") {
+      renderCbtDojo(root);
+      return;
+    }
+
     if (drillState.deck.length === 0 && !drillState.blitzActive) {
       rebuildDeck(false);
     }
@@ -369,7 +412,7 @@
       docMap.get(c.docId).cnt++;
     });
 
-    let html =
+    let html = renderDojoTabBar() +
       '<div class="studio-header">' +
       "<div><h2>⚔️ 仕訳道場 v2（問題文連動・自動採点＆高速SRS）</h2>" +
       '<p class="studio-sub">全単元・模試の問題文と完全連動した<strong>' + allCards.length + '問</strong>。手入力で採点する「✍️ 入力採点モード」と、爆速周回用の「⚡ フラッシュカードモード」を切り替えられます。</p></div>' +
@@ -647,6 +690,8 @@
   }
 
   function bindDrillToolbar() {
+    const rootEl = document.getElementById("drillView");
+    if (rootEl) bindDojoTabBar(rootEl);
     document.querySelectorAll(".drill-submode-btn").forEach((b) => {
       b.onclick = () => {
         drillState.mode = b.dataset.dmode;
@@ -668,7 +713,7 @@
   }
 
   document.addEventListener("keydown", (e) => {
-    if (studio.getStudioMode() !== "drill") return;
+    if (studio.getStudioMode() !== "drill" || drillState.dojoTab !== "journal") return;
     const tag = document.activeElement ? document.activeElement.tagName : "";
     if (["INPUT", "TEXTAREA", "SELECT", "BUTTON"].includes(tag) && e.code === "Space") return;
     if (["INPUT", "TEXTAREA", "SELECT"].includes(tag)) return;
@@ -687,6 +732,429 @@
       advanceDrillCard(-1);
     }
   });
+
+  /* =========================================================================
+   * 1B. INDUSTRIAL & COST CALCULATION DOJO (🏭 工簿・原計 数値道場)
+   * ========================================================================= */
+  const calcDojoState = {
+    part: "all",
+    idx: 0,
+    userVal: "",
+    userSign: "favorable",
+    result: null
+  };
+
+  function parseDecimalInput(s) {
+    const half = String(s || "").replace(/[０-９．－]/g, (ch) => {
+      if (ch === "．") return ".";
+      if (ch === "－") return "-";
+      return String.fromCharCode(ch.charCodeAt(0) - 0xfee0);
+    });
+    const cleaned = half.replace(/[,円個倍%\s\u3000]/g, "");
+    if (!cleaned || isNaN(Number(cleaned))) return null;
+    return Number(cleaned);
+  }
+
+  function renderCalcDojo(root) {
+    const all = DATA.calcDrills || [];
+    const list = all.filter((c) => calcDojoState.part === "all" || c.part === calcDojoState.part);
+    if (calcDojoState.idx >= list.length) calcDojoState.idx = 0;
+
+    const masteredCnt = all.filter((c) => state.srs[c.id] && state.srs[c.id].level >= 2).length;
+    let html = renderDojoTabBar() +
+      '<div class="studio-header">' +
+      "<div><h2>🏭 工業簿記・原価計算 数値道場（全" + all.length + "問・厳密検算済）</h2>" +
+      '<p class="studio-sub">シュラッター図・総合原価・標準原価・CVP・意思決定・NPVの計算力を数値入力で直接採点します。</p></div>' +
+      '<div class="drill-stats-pills"><span class="meta-pill accent">習得済 ' + masteredCnt + " / " + all.length + "</span></div></div>";
+
+    html += '<div class="drill-toolbar">';
+    html += '<select id="calcPartSel" class="studio-select">';
+    html += '<option value="all"' + (calcDojoState.part === "all" ? " selected" : "") + ">全範囲 (" + all.length + ")</option>";
+    html += '<option value="L2I"' + (calcDojoState.part === "L2I" ? " selected" : "") + ">2級 工業簿記 (" + all.filter((c) => c.part === "L2I").length + ")</option>";
+    html += '<option value="L1I"' + (calcDojoState.part === "L1I" ? " selected" : "") + ">1級 工簿・原価計算 (" + all.filter((c) => c.part === "L1I").length + ")</option>";
+    html += "</select>";
+    html += '<button type="button" class="mask-btn" id="calcNextQuickBtn">次の問題 →</button>';
+    html += "</div>";
+
+    const item = list[calcDojoState.idx];
+    if (!item) {
+      root.innerHTML = html + '<div class="studio-card"><p>問題が見つかりません。</p></div>';
+      bindDojoTabBar(root);
+      return;
+    }
+
+    const srsRec = state.srs[item.id];
+    const srsBadge = !srsRec ? '<span class="meta-pill">未学習</span>' : srsRec.level >= 2 ? '<span class="meta-pill emerald-pill">🟢 正解済</span>' : '<span class="meta-pill danger-pill">🔴 要復習</span>';
+
+    html += '<div class="studio-card drill-card">';
+    html += '<div class="drill-card-meta"><div><span class="meta-pill accent">' + escapeHtml(item.docId) + '</span> <span class="meta-pill">' + escapeHtml(item.topic) + '</span> <span class="meta-pill">' + escapeHtml(item.format) + "</span> " + srsBadge + '</div><div class="drill-counter">' + (calcDojoState.idx + 1) + " / " + list.length + "</div></div>";
+    html += '<div class="drill-question-box"><div class="focus-text">' + formatInlineMd(item.question) + "</div></div>";
+
+    html += '<div class="calc-input-row">';
+    html += '<label class="calc-num-label">解答数値:<input id="calcAnsInput" type="text" inputmode="decimal" class="drill-cell-input num" style="max-width:220px;" placeholder="例: 12000" value="' + escapeHtml(calcDojoState.userVal) + '" /></label>';
+    html += '<span class="calc-unit-pill">' + escapeHtml(item.answerUnit) + "</span>";
+    if (item.varianceSign !== "none") {
+      html += '<div class="drill-submode-tabs">';
+      html += '<button type="button" class="sim-tab-btn calc-sign-btn' + (calcDojoState.userSign === "favorable" ? " active" : "") + '" data-sign="favorable">有利差異 (貸方/+)</button>';
+      html += '<button type="button" class="sim-tab-btn calc-sign-btn' + (calcDojoState.userSign === "unfavorable" ? " active" : "") + '" data-sign="unfavorable">不利差異 (借方/-)</button>';
+      html += "</div>";
+    }
+    html += "</div>";
+
+    html += '<div class="drill-controls-row"><div class="drill-reveal-btns">';
+    html += '<button type="button" class="primary-btn" id="calcCheckBtn">✔ 判定する（採点）</button>';
+    html += '<button type="button" class="mask-btn" id="calcOpenDocBtn">📖 単元テキスト</button>';
+    html += '</div><div class="drill-nav-btns">';
+    html += '<button type="button" class="mask-btn" id="calcPrevBtn">← 前</button>';
+    html += '<button type="button" class="mask-btn" id="calcNextBtn">次 →</button>';
+    html += "</div></div>";
+
+    if (calcDojoState.result) {
+      const r = calcDojoState.result;
+      const signJp = item.varianceSign === "favorable" ? "（有利差異）" : item.varianceSign === "unfavorable" ? "（不利差異）" : "";
+      html += '<div class="grade-result-box ' + (r.ok ? "grade-perfect" : "grade-wrong") + '">';
+      html += '<div class="grade-msg">' + escapeHtml(r.msg) + "</div>";
+      html += '<div style="margin-bottom:8px;"><strong>正解：</strong><code>' + fmtNum(item.answerNum, String(item.answerNum).includes(".") ? 1 : 0) + escapeHtml(item.answerUnit + signJp) + "</code></div>";
+      html += '<div class="drill-explanation-box"><strong>📐 計算式・解説</strong><div><code>' + escapeHtml(item.formula) + '</code></div><div class="exp-body">' + escapeHtml(item.explanation) + "</div></div>";
+      html += '<div style="margin-top:12px;"><button type="button" class="primary-btn" id="calcAfterNextBtn">次の問題へ →</button></div>';
+      html += "</div>";
+    }
+
+    html += "</div>";
+    root.innerHTML = html;
+    bindDojoTabBar(root);
+
+    document.getElementById("calcPartSel").onchange = (e) => { calcDojoState.part = e.target.value; calcDojoState.idx = 0; calcDojoState.userVal = ""; calcDojoState.result = null; renderCalcDojo(root); };
+    const goCalc = (d) => { calcDojoState.idx = (calcDojoState.idx + d + list.length) % list.length; calcDojoState.userVal = ""; calcDojoState.result = null; renderCalcDojo(root); };
+    document.getElementById("calcNextQuickBtn").onclick = () => goCalc(1);
+    document.getElementById("calcPrevBtn").onclick = () => goCalc(-1);
+    document.getElementById("calcNextBtn").onclick = () => goCalc(1);
+    document.getElementById("calcOpenDocBtn").onclick = () => openDoc(item.docId);
+    const inp = document.getElementById("calcAnsInput");
+    if (inp) inp.oninput = (e) => { calcDojoState.userVal = e.target.value; };
+    root.querySelectorAll(".calc-sign-btn").forEach((b) => {
+      b.onclick = () => { calcDojoState.userSign = b.dataset.sign; renderCalcDojo(root); };
+    });
+    document.getElementById("calcCheckBtn").onclick = () => {
+      const uNum = parseDecimalInput(calcDojoState.userVal);
+      if (uNum === null) {
+        calcDojoState.result = { ok: false, msg: "数値を入力してください。" };
+        renderCalcDojo(root);
+        return;
+      }
+      const numMatch = Math.abs(Math.abs(uNum) - Math.abs(Number(item.answerNum))) < 0.05 && (Number(item.answerNum) < 0 ? uNum < 0 || item.varianceSign !== "none" : true);
+      const signMatch = item.varianceSign === "none" || calcDojoState.userSign === item.varianceSign;
+      const ok = numMatch && signMatch;
+      state.srs[item.id] = { level: ok ? 2 : 0, updatedAt: new Date().toISOString() };
+      saveState();
+      calcDojoState.result = {
+        ok,
+        msg: ok ? "🎉 正解！計算ロジックが正確に身についています。" : (!numMatch ? "🔴 数値が異なります。下の公式と下書き型を確認しましょう。" : "🟡 数値は正解ですが、有利差異／不利差異の判定が逆です！")
+      };
+      renderCalcDojo(root);
+    };
+    const an = document.getElementById("calcAfterNextBtn");
+    if (an) an.onclick = () => goCalc(1);
+  }
+
+  /* =========================================================================
+   * 1C. THEORY KEYWORDS & ARGUMENTS DOJO (🧠 理論 穴埋め道場 130問)
+   * ========================================================================= */
+  const theoryDojoState = {
+    source: "all",
+    idx: 0,
+    pickedIdx: -1
+  };
+
+  function buildTheoryChoices(item, all) {
+    const pool = all.filter((x) => x.id !== item.id && x.answer !== item.answer).map((x) => x.answer);
+    const uniq = Array.from(new Set(pool));
+    let seed = 0;
+    for (let i = 0; i < item.id.length; i++) seed = (seed * 31 + item.id.charCodeAt(i)) >>> 0;
+    const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+    for (let i = uniq.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      const t = uniq[i]; uniq[i] = uniq[j]; uniq[j] = t;
+    }
+    const choices = [item.answer].concat(uniq.slice(0, 3));
+    for (let i = choices.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      const t = choices[i]; choices[i] = choices[j]; choices[j] = t;
+    }
+    return choices;
+  }
+
+  function renderTheoryDojo(root) {
+    const all = DATA.theoryDrills || [];
+    const list = all.filter((t) => theoryDojoState.source === "all" || t.source === theoryDojoState.source);
+    if (theoryDojoState.idx >= list.length) theoryDojoState.idx = 0;
+
+    const masteredCnt = all.filter((t) => state.srs[t.id] && state.srs[t.id].level >= 2).length;
+    let html = renderDojoTabBar() +
+      '<div class="studio-header">' +
+      "<div><h2>🧠 1級会計学・原価計算 理論穴埋め道場（全" + all.length + "問）</h2>" +
+      '<p class="studio-sub">EX-05（頻出論証50選）と CS-05（理論キーワード80語）から抽出した空欄補充4択トレーニングです。</p></div>' +
+      '<div class="drill-stats-pills"><span class="meta-pill accent">習得済 ' + masteredCnt + " / " + all.length + "</span></div></div>";
+
+    html += '<div class="drill-toolbar">';
+    html += '<select id="theorySrcSel" class="studio-select">';
+    html += '<option value="all"' + (theoryDojoState.source === "all" ? " selected" : "") + ">すべて (" + all.length + ")</option>";
+    html += '<option value="EX-05"' + (theoryDojoState.source === "EX-05" ? " selected" : "") + ">EX-05 1級重要論証 (" + all.filter((t) => t.source === "EX-05").length + ")</option>";
+    html += '<option value="CS-05"' + (theoryDojoState.source === "CS-05" ? " selected" : "") + ">CS-05 理論キーワード (" + all.filter((t) => t.source === "CS-05").length + ")</option>";
+    html += "</select>";
+    html += '<button type="button" class="mask-btn" id="theoryNextQuickBtn">次の問題 →</button>';
+    html += "</div>";
+
+    const item = list[theoryDojoState.idx];
+    if (!item) {
+      root.innerHTML = html + '<div class="studio-card"><p>理論問題がありません。</p></div>';
+      bindDojoTabBar(root);
+      return;
+    }
+
+    const choices = buildTheoryChoices(item, all);
+    const answered = theoryDojoState.pickedIdx >= 0;
+    const maskedPrompt = item.source === "EX-05" && item.answer && item.prompt.includes(item.answer)
+      ? item.prompt.replace(item.answer, "【 ？？？ 】")
+      : item.prompt;
+    const dispTitle = item.source === "CS-05" ? "この本質定義に当てはまる理論キーワードは？" : item.title;
+
+    html += '<div class="studio-card drill-card">';
+    html += '<div class="drill-card-meta"><div><span class="meta-pill accent">' + escapeHtml(item.source) + '</span> <span class="meta-pill">' + escapeHtml(item.category) + '</span></div><div class="drill-counter">' + (theoryDojoState.idx + 1) + " / " + list.length + "</div></div>";
+    html += '<div class="drill-doc-title">' + escapeHtml(dispTitle) + "</div>";
+    html += '<div class="drill-question-box"><div class="focus-text">' + formatInlineMd(maskedPrompt) + "</div></div>";
+
+    html += '<div class="theory-choices-grid">';
+    choices.forEach((ch, cIdx) => {
+      let cls = "theory-choice-btn";
+      if (answered) {
+        if (ch === item.answer) cls += " choice-correct";
+        else if (cIdx === theoryDojoState.pickedIdx) cls += " choice-wrong";
+      }
+      html += '<button type="button" class="' + cls + '" data-cidx="' + cIdx + '"' + (answered ? " disabled" : "") + ">" + (cIdx + 1) + ". " + escapeHtml(ch) + "</button>";
+    });
+    html += "</div>";
+
+    if (answered) {
+      const ok = choices[theoryDojoState.pickedIdx] === item.answer;
+      html += '<div class="grade-result-box ' + (ok ? "grade-perfect" : "grade-wrong") + '">';
+      html += '<div class="grade-msg">' + (ok ? "🎉 正解！" : "🔴 不正解。正解は「" + escapeHtml(item.answer) + "」です。") + "</div>";
+      html += '<div class="drill-explanation-box"><strong>📖 理論根拠・対比の急所</strong><div class="exp-body">' + formatInlineMd(item.explanation || item.prompt) + "</div></div>";
+      html += '<div class="drill-controls-row" style="margin-top:12px;"><button type="button" class="mask-btn" id="theoryOpenDocBtn">📖 関連単元を開く</button><button type="button" class="primary-btn" id="theoryAfterNextBtn">次の問題へ →</button></div>';
+      html += "</div>";
+    } else {
+      html += '<div class="drill-controls-row"><div class="drill-nav-btns"><button type="button" class="mask-btn" id="theoryPrevBtn">← 前</button><button type="button" class="mask-btn" id="theoryNextBtn">次 →</button></div></div>';
+    }
+
+    html += "</div>";
+    root.innerHTML = html;
+    bindDojoTabBar(root);
+
+    document.getElementById("theorySrcSel").onchange = (e) => { theoryDojoState.source = e.target.value; theoryDojoState.idx = 0; theoryDojoState.pickedIdx = -1; renderTheoryDojo(root); };
+    const goTh = (d) => { theoryDojoState.idx = (theoryDojoState.idx + d + list.length) % list.length; theoryDojoState.pickedIdx = -1; renderTheoryDojo(root); };
+    document.getElementById("theoryNextQuickBtn").onclick = () => goTh(1);
+    const pb = document.getElementById("theoryPrevBtn"); if (pb) pb.onclick = () => goTh(-1);
+    const nb = document.getElementById("theoryNextBtn"); if (nb) nb.onclick = () => goTh(1);
+    const an = document.getElementById("theoryAfterNextBtn"); if (an) an.onclick = () => goTh(1);
+    const od = document.getElementById("theoryOpenDocBtn"); if (od) od.onclick = () => openDoc(item.docId);
+
+    root.querySelectorAll(".theory-choice-btn").forEach((b) => {
+      b.onclick = () => {
+        const idx = Number(b.dataset.cidx);
+        theoryDojoState.pickedIdx = idx;
+        const ok = choices[idx] === item.answer;
+        state.srs[item.id] = { level: ok ? 2 : 0, updatedAt: new Date().toISOString() };
+        saveState();
+        renderTheoryDojo(root);
+      };
+    });
+  }
+
+  /* =========================================================================
+   * 1D. CBT MOCK EXAM RUNNER (📝 本番CBT模試ランナー)
+   * ========================================================================= */
+  const cbtState = {
+    examId: "EX-02",
+    started: false,
+    secLeft: 3600,
+    timer: null,
+    answers: {}, // cardId -> { dSub, dAmt, cSub, cAmt }
+    submitted: false
+  };
+
+  const CBT_EXAMS = [
+    { id: "EX-02", label: "3級 実戦模試 第1回 (60分)", mins: 60 },
+    { id: "EX-06", label: "3級 実戦模試 第2回 (60分)", mins: 60 },
+    { id: "EX-03", label: "2級 実戦模試 第1回 (90分)", mins: 90 },
+    { id: "EX-07", label: "2級 実戦模試 第2回 (90分)", mins: 90 },
+    { id: "EX-04", label: "1級 本番総合模試 (90分前半)", mins: 90 }
+  ];
+
+  function stopCbtTimer() {
+    if (cbtState.timer) { clearInterval(cbtState.timer); cbtState.timer = null; }
+  }
+
+  function renderCbtDojo(root) {
+    const examMeta = CBT_EXAMS.find((e) => e.id === cbtState.examId) || CBT_EXAMS[0];
+    const cards = (DATA.drills || []).filter((d) => d.docId === cbtState.examId);
+    const mm = String(Math.floor(cbtState.secLeft / 60)).padStart(2, "0");
+    const ss = String(cbtState.secLeft % 60).padStart(2, "0");
+
+    let html = renderDojoTabBar() +
+      '<div class="studio-header">' +
+      "<div><h2>📝 本番CBT模試ランナー（制限時間・一括採点・足切り判定）</h2>" +
+      '<p class="studio-sub">2027年新区分対応の模擬試験（第1回・第2回）を本番タイマー付きで通し演習し、70%合格ラインと40%足切りを診断します。</p></div>' +
+      '<div class="drill-stats-pills"><span id="cbtClockPill" class="meta-pill ' + (cbtState.started ? "danger-pill" : "accent") + '">⏱ ' + mm + ":" + ss + "</span></div></div>";
+
+    html += '<div class="drill-toolbar">';
+    html += '<select id="cbtExamSel" class="studio-select">';
+    CBT_EXAMS.forEach((ex) => {
+      html += '<option value="' + ex.id + '"' + (cbtState.examId === ex.id ? " selected" : "") + ">" + escapeHtml(ex.label) + "</option>";
+    });
+    html += "</select>";
+    if (!cbtState.started) {
+      html += '<button type="button" class="primary-btn" id="cbtStartBtn">▶ 試験を開始する (' + examMeta.mins + "分)</button>";
+    } else {
+      html += '<button type="button" class="mask-btn" id="cbtResetBtn">リセット</button>';
+    }
+    html += '<button type="button" class="mask-btn" id="cbtOpenFullDocBtn">📖 模試全文・総合問題を見る</button>';
+    html += "</div>";
+
+    if (!cbtState.started && !cbtState.submitted) {
+      html += '<div class="studio-card"><h3>' + escapeHtml(examMeta.label) + '</h3><p class="studio-sub">収録仕訳タスク：<strong>' + cards.length + '問</strong>。開始ボタンを押すとカウントダウンが始まります（単純仕訳・複合仕訳の主行を入力し、最後に一括採点します）。</p></div>';
+      root.innerHTML = html;
+      bindDojoTabBar(root);
+      document.getElementById("cbtExamSel").onchange = (e) => {
+        stopCbtTimer();
+        cbtState.examId = e.target.value;
+        const m = CBT_EXAMS.find((x) => x.id === cbtState.examId);
+        cbtState.secLeft = (m ? m.mins : 60) * 60;
+        cbtState.answers = {};
+        cbtState.submitted = false;
+        renderCbtDojo(root);
+      };
+      document.getElementById("cbtOpenFullDocBtn").onclick = () => openDoc(cbtState.examId);
+      document.getElementById("cbtStartBtn").onclick = () => {
+        cbtState.started = true;
+        cbtState.submitted = false;
+        cbtState.secLeft = examMeta.mins * 60;
+        stopCbtTimer();
+        cbtState.timer = setInterval(() => {
+          if (cbtState.secLeft > 0) cbtState.secLeft--;
+          const p = document.getElementById("cbtClockPill");
+          if (p) {
+            const m2 = String(Math.floor(cbtState.secLeft / 60)).padStart(2, "0");
+            const s2 = String(cbtState.secLeft % 60).padStart(2, "0");
+            p.textContent = "⏱ " + m2 + ":" + s2;
+          }
+          if (cbtState.secLeft === 0) stopCbtTimer();
+        }, 1000);
+        renderCbtDojo(root);
+      };
+      return;
+    }
+
+    // Subjects datalist
+    const subjectsList = DATA.subjects || [];
+    html += '<datalist id="cbtSubjectsDatalist">';
+    subjectsList.forEach((s) => { html += '<option value="' + escapeHtml(s) + '"></option>'; });
+    html += "</datalist>";
+
+    // Group questions by section
+    let score = 0;
+    const secStats = {};
+    cards.forEach((c) => {
+      const a = cbtState.answers[c.id] || { dSub: "", dAmt: "", cSub: "", cAmt: "" };
+      const mainRow = c.rows[0] || {};
+      const ok =
+        normalizeSubject(a.dSub) === normalizeSubject(mainRow.dSub) &&
+        parseInputAmount(a.dAmt) === parseInputAmount(mainRow.dAmt) &&
+        normalizeSubject(a.cSub) === normalizeSubject(mainRow.cSub) &&
+        parseInputAmount(a.cAmt) === parseInputAmount(mainRow.cAmt);
+      if (!secStats[c.section]) secStats[c.section] = { total: 0, ok: 0 };
+      secStats[c.section].total++;
+      if (ok) { score++; secStats[c.section].ok++; }
+    });
+
+    if (cbtState.submitted) {
+      const pct = cards.length ? Math.round((score / cards.length) * 100) : 0;
+      const cutWarn = Object.entries(secStats).some(([, st]) => st.total >= 3 && (st.ok / st.total) < 0.4);
+      html += '<div class="studio-card grade-result-box ' + (pct >= 70 && !cutWarn ? "grade-perfect" : "grade-partial") + '">';
+      html += "<h3>📊 CBT採点結果：" + score + " / " + cards.length + " 問正解（" + pct + "%）</h3>";
+      html += '<div class="kpi-grid">';
+      html += '<div class="kpi-box"><div class="kpi-lbl">総合判定 (70%基準)</div><div class="kpi-val ' + (pct >= 70 ? "emerald-txt" : "danger-txt") + '">' + (pct >= 70 ? "合格圏" : "要強化") + "</div></div>";
+      html += '<div class="kpi-box"><div class="kpi-lbl">40%足切り防衛</div><div class="kpi-val ' + (cutWarn ? "danger-txt" : "emerald-txt") + '">' + (cutWarn ? "⚠ 40%未満セクションあり" : "✓ 全セクションクリア") + "</div></div>";
+      html += "</div>";
+      Object.entries(secStats).forEach(([sec, st]) => {
+        const sp = Math.round((st.ok / st.total) * 100);
+        html += '<div class="list-action-row"><span>' + escapeHtml(sec) + '</span><span class="meta-pill ' + (sp < 40 ? "danger-pill" : "emerald-pill") + '">' + st.ok + " / " + st.total + " (" + sp + "%)</span></div>";
+      });
+      html += "</div>";
+    }
+
+    cards.forEach((c, idx) => {
+      const a = cbtState.answers[c.id] || { dSub: "", dAmt: "", cSub: "", cAmt: "" };
+      const mainRow = c.rows[0] || {};
+      const ok =
+        normalizeSubject(a.dSub) === normalizeSubject(mainRow.dSub) &&
+        parseInputAmount(a.dAmt) === parseInputAmount(mainRow.dAmt) &&
+        normalizeSubject(a.cSub) === normalizeSubject(mainRow.cSub) &&
+        parseInputAmount(a.cAmt) === parseInputAmount(mainRow.cAmt);
+
+      html += '<div class="studio-card cbt-q-card">';
+      html += '<div class="drill-card-meta"><div><span class="meta-pill accent">Q' + (idx + 1) + '</span> <span class="meta-pill">' + escapeHtml(c.section) + "</span></div></div>";
+      html += '<div class="focus-text" style="margin-bottom:8px;">' + formatInlineMd(c.focusLine || c.questionBody) + "</div>";
+      html += '<div class="table-wrap"><table class="journal-table drill-input-table"><thead><tr><th>借方科目(主行)</th><th class="num">借方金額</th><th>貸方科目(主行)</th><th class="num">貸方金額</th></tr></thead><tbody><tr>';
+      html += '<td><input type="text" class="drill-cell-input cbt-inp" list="cbtSubjectsDatalist" data-cid="' + escapeHtml(c.id) + '" data-fld="dSub" value="' + escapeHtml(a.dSub) + '" placeholder="借方科目..." /></td>';
+      html += '<td><input type="text" inputmode="numeric" class="drill-cell-input num cbt-inp" data-cid="' + escapeHtml(c.id) + '" data-fld="dAmt" value="' + escapeHtml(a.dAmt) + '" placeholder="0" /></td>';
+      html += '<td><input type="text" class="drill-cell-input cbt-inp" list="cbtSubjectsDatalist" data-cid="' + escapeHtml(c.id) + '" data-fld="cSub" value="' + escapeHtml(a.cSub) + '" placeholder="貸方科目..." /></td>';
+      html += '<td><input type="text" inputmode="numeric" class="drill-cell-input num cbt-inp" data-cid="' + escapeHtml(c.id) + '" data-fld="cAmt" value="' + escapeHtml(a.cAmt) + '" placeholder="0" /></td>';
+      html += "</tr></tbody></table></div>";
+
+      if (cbtState.submitted) {
+        html += '<div class="meta-pill ' + (ok ? "emerald-pill" : "danger-pill") + '" style="margin-top:8px;">' + (ok ? "✓ 正解" : "✕ 模範: " + escapeHtml(mainRow.dSub + " " + mainRow.dAmt + " / " + mainRow.cSub + " " + mainRow.cAmt)) + "</div>";
+      }
+      html += "</div>";
+    });
+
+    if (!cbtState.submitted) {
+      html += '<div style="margin:16px 0;"><button type="button" class="primary-btn" id="cbtSubmitBtn">📝 模試を提出して一括採点する</button></div>';
+    }
+
+    root.innerHTML = html;
+    bindDojoTabBar(root);
+
+    document.getElementById("cbtExamSel").onchange = (e) => {
+      stopCbtTimer();
+      cbtState.examId = e.target.value;
+      cbtState.started = false;
+      cbtState.submitted = false;
+      cbtState.answers = {};
+      const m = CBT_EXAMS.find((x) => x.id === cbtState.examId);
+      cbtState.secLeft = (m ? m.mins : 60) * 60;
+      renderCbtDojo(root);
+    };
+    const rBtn = document.getElementById("cbtResetBtn");
+    if (rBtn) rBtn.onclick = () => { stopCbtTimer(); cbtState.started = false; cbtState.submitted = false; cbtState.answers = {}; cbtState.secLeft = examMeta.mins * 60; renderCbtDojo(root); };
+    document.getElementById("cbtOpenFullDocBtn").onclick = () => openDoc(cbtState.examId);
+    root.querySelectorAll(".cbt-inp").forEach((inp) => {
+      inp.oninput = () => {
+        const cid = inp.dataset.cid;
+        if (!cbtState.answers[cid]) cbtState.answers[cid] = { dSub: "", dAmt: "", cSub: "", cAmt: "" };
+        cbtState.answers[cid][inp.dataset.fld] = inp.value;
+      };
+    });
+    const subBtn = document.getElementById("cbtSubmitBtn");
+    if (subBtn) {
+      subBtn.onclick = () => {
+        stopCbtTimer();
+        cbtState.started = false;
+        cbtState.submitted = true;
+        renderCbtDojo(root);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
+    }
+  }
 
   /* =========================================================================
    * 2. 5 INTERACTIVE SIMULATORS (🧮 5大シミュレータ)

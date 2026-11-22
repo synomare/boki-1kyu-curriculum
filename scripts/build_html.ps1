@@ -400,6 +400,103 @@ function Extract-DrillCards {
     return $cards
 }
 
+function Extract-TheoryDrills {
+    param(
+        [string]$Ex05Content,
+        [string]$Cs05Content
+    )
+    $list = New-Object System.Collections.Generic.List[object]
+
+    # 1. EX-05: 50 arguments
+    if (-not [string]::IsNullOrWhiteSpace($Ex05Content)) {
+        $lines = $Ex05Content -split "\r?\n"
+        $curCat = ""
+        $curNum = ""
+        $curTitle = ""
+        $conc = ""
+        $reason = ""
+        $kws = @()
+
+        $flushEx05 = {
+            if ($curNum -and $curTitle -and $conc) {
+                $ans = if ($kws.Count -gt 0) { $kws[0] } else { $curTitle }
+                $list.Add([ordered]@{
+                    id          = ("TH-EX-" + $curNum)
+                    source      = "EX-05"
+                    docId       = "EX-05"
+                    category    = $curCat
+                    title       = $curTitle
+                    prompt      = $conc
+                    answer      = $ans
+                    keywords    = $kws
+                    explanation = $reason
+                })
+            }
+        }
+
+        foreach ($line in $lines) {
+            $t = $line.Trim()
+            if ($t -match '^##\s+(.*)$') {
+                & $flushEx05
+                $curCat = $matches[1].Trim()
+                $curNum = ""; $curTitle = ""; $conc = ""; $reason = ""; $kws = @()
+            } elseif ($t -match '^###\s+(\d+)\.\s*(.*)$') {
+                & $flushEx05
+                $curNum = $matches[1]
+                $curTitle = $matches[2].Trim()
+                $conc = ""; $reason = ""; $kws = @()
+            } elseif ($t -match '^-\s*\*\*\u7D50\u8AD6\*\*\uFF1A(.*)$') {
+                $conc = $matches[1].Trim()
+            } elseif ($t -match '^-\s*\*\*\u7406\u8AD6\u6839\u62E0\*\*\uFF1A(.*)$') {
+                $reason = $matches[1].Trim()
+            } elseif ($t -match '^-\s*\*\*\u672C\u8A66\u9A13\u30AD\u30FC\u30EF\u30FC\u30C9\*\*\uFF1A(.*)$') {
+                $rawKw = $matches[1].Trim()
+                $ms = [regex]::Matches($rawKw, '`([^`]+)`')
+                $kwArr = @()
+                foreach ($m in $ms) { $kwArr += $m.Groups[1].Value.Trim() }
+                $kws = $kwArr
+            }
+        }
+        & $flushEx05
+    }
+
+    # 2. CS-05: 80 keywords
+    if (-not [string]::IsNullOrWhiteSpace($Cs05Content)) {
+        $lines = $Cs05Content -split "\r?\n"
+        $curCat = ""
+        foreach ($line in $lines) {
+            $t = $line.Trim()
+            if ($t -match '^##\s+(.*)$') {
+                $curCat = $matches[1].Trim()
+            } elseif ($t.StartsWith("|")) {
+                $cells = Split-MdRow -Line $t
+                if ($cells.Length -ge 5) {
+                    $noClean = $cells[0].Replace("*", "").Trim()
+                    if ($noClean -match '^\d+$') {
+                        $kw = $cells[1].Trim()
+                        $def = $cells[2].Trim()
+                        $trap = $cells[3].Trim()
+                        $rel = $cells[4].Trim()
+                        $list.Add([ordered]@{
+                            id          = ("TH-CS-" + $noClean)
+                            source      = "CS-05"
+                            docId       = $rel
+                            category    = $curCat
+                            title       = $kw
+                            prompt      = $def
+                            answer      = $kw
+                            keywords    = @($kw)
+                            explanation = $trap
+                        })
+                    }
+                }
+            }
+        }
+    }
+
+    return $list
+}
+
 $viewerDir = Join-Path $RootDir "viewer"
 if (-not (Test-Path $viewerDir)) {
     New-Item -ItemType Directory -Path $viewerDir -Force | Out-Null
@@ -408,6 +505,8 @@ if (-not (Test-Path $viewerDir)) {
 $itemJsonList = New-Object System.Collections.Generic.List[string]
 $drillJsonList = New-Object System.Collections.Generic.List[string]
 $subjectSet = New-Object System.Collections.Generic.HashSet[string]
+$ex05Md = ""
+$cs05Md = ""
 $availableCount = 0
 
 foreach ($item in $manifest.items) {
@@ -418,6 +517,8 @@ foreach ($item in $manifest.items) {
     if ($isAvail) {
         $mdContent = [System.IO.File]::ReadAllText($fullPath, [System.Text.Encoding]::UTF8)
         $availableCount++
+        if ($item.id -eq "EX-05") { $ex05Md = $mdContent }
+        if ($item.id -eq "CS-05") { $cs05Md = $mdContent }
         if ($item.part -ne "guide") {
             $extracted = Extract-DrillCards -Item $item -MdContent $mdContent -Rules $rules
             foreach ($card in $extracted) {
@@ -463,7 +564,21 @@ $subjectsJson = ConvertTo-Json -InputObject $subjectsArr -Depth 3 -Compress
 $itemsJoined = "[" + ($itemJsonList -join ",") + "]"
 $drillsJoined = "[" + ($drillJsonList -join ",") + "]"
 
-$jsPayload = "window.CURRICULUM_DATA = {`"generatedAt`":`"$generatedAt`",`"fullPdfPath`":`"../dist/pdf/boki-1kyu-curriculum.pdf`",`"fullPdfAvailable`":$fullPdfAvail,`"parts`":$partsJson,`"lines`":$linesJson,`"subjects`":$subjectsJson,`"items`":$itemsJoined,`"drills`":$drillsJoined};"
+$calcPath = Join-Path $PSScriptRoot "calc_drills.json"
+$calcJson = if (Test-Path $calcPath) {
+    $calcObjs = ([System.IO.File]::ReadAllText($calcPath, [System.Text.Encoding]::UTF8)) | ConvertFrom-Json
+    $cList = New-Object System.Collections.Generic.List[string]
+    foreach ($co in $calcObjs) { $cList.Add(($co | ConvertTo-Json -Depth 4 -Compress)) }
+    "[" + ($cList -join ",") + "]"
+} else { "[]" }
+$calcCount = if (Test-Path $calcPath) { $calcObjs.Count } else { 0 }
+
+$theoryList = Extract-TheoryDrills -Ex05Content $ex05Md -Cs05Content $cs05Md
+$tJsonList = New-Object System.Collections.Generic.List[string]
+foreach ($th in $theoryList) { $tJsonList.Add(($th | ConvertTo-Json -Depth 4 -Compress)) }
+$theoryJoined = "[" + ($tJsonList -join ",") + "]"
+
+$jsPayload = "window.CURRICULUM_DATA = {`"generatedAt`":`"$generatedAt`",`"fullPdfPath`":`"../dist/pdf/boki-1kyu-curriculum.pdf`",`"fullPdfAvailable`":$fullPdfAvail,`"parts`":$partsJson,`"lines`":$linesJson,`"subjects`":$subjectsJson,`"items`":$itemsJoined,`"drills`":$drillsJoined,`"calcDrills`":$calcJson,`"theoryDrills`":$theoryJoined};"
 
 $outPath = Join-Path $viewerDir "curriculum_data.js"
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
@@ -473,5 +588,7 @@ Write-Host "[BUILD PASS] Generated $outPath" -ForegroundColor Green
 Write-Host "Total Manifest Items : $($manifest.items.Count)"
 Write-Host "Available Documents  : $availableCount"
 Write-Host "Extracted Drill Cards: $($drillJsonList.Count)"
+Write-Host "Calc Drills          : $calcCount"
+Write-Host "Theory Drills        : $($theoryList.Count)"
 Write-Host "Unique Subjects      : $($subjectsArr.Count)"
 exit 0
