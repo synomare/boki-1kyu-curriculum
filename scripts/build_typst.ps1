@@ -4,6 +4,7 @@ param(
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $ErrorActionPreference = "Stop"
+$env:RAYON_NUM_THREADS = "1"
 
 if ([string]::IsNullOrWhiteSpace($RootDir)) {
     $RootDir = Split-Path -Parent $PSScriptRoot
@@ -380,7 +381,7 @@ foreach ($item in $manifest.items) {
 
     $unitPdfPath = Join-Path $distUnitsDir "$($item.id).pdf"
     Write-Host "Compiling PDF: $($item.id).pdf ..." -ForegroundColor Cyan
-    & $typstExe compile --root $RootDir $unitEntryPath $unitPdfPath
+    & $typstExe compile --jobs 1 --root $RootDir $unitEntryPath $unitPdfPath
     if ($LASTEXITCODE -ne 0) {
         throw "Typst compile failed for $($item.id)"
     }
@@ -407,10 +408,26 @@ $mainTypPath = Join-Path $typstDir "main.typ"
 [System.IO.File]::WriteAllText($mainTypPath, $mainTypContent, $utf8NoBom)
 
 $fullPdfPath = Join-Path $distPdfDir "boki-1kyu-curriculum.pdf"
+$fullPdfTmp = "$fullPdfPath.tmp"
+if (Test-Path $fullPdfTmp) { Remove-Item $fullPdfTmp -Force }
+
 Write-Host "Compiling Full Book PDF: boki-1kyu-curriculum.pdf ..." -ForegroundColor Cyan
-& $typstExe compile --root $RootDir $mainTypPath $fullPdfPath
-if ($LASTEXITCODE -ne 0) {
-    throw "Typst compile failed for main.typ"
+$prevEap = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
+& $typstExe compile --jobs 1 --no-pdf-tags --root $RootDir $mainTypPath $fullPdfTmp
+$mainExit = $LASTEXITCODE
+$ErrorActionPreference = $prevEap
+
+if ($mainExit -eq 0 -and (Test-Path $fullPdfTmp)) {
+    Move-Item -Path $fullPdfTmp -Destination $fullPdfPath -Force
+} else {
+    if (Test-Path $fullPdfTmp) { Remove-Item $fullPdfTmp -Force }
+    Write-Host "Single-process main.typ compile failed (exit $mainExit); using Part-chunked Full Book builder..." -ForegroundColor Yellow
+    $partsScript = Join-Path $PSScriptRoot "build_full_book_parts.py"
+    & py -3 -X utf8 $partsScript --root $RootDir --typst $typstExe --generated-at $generatedAt
+    if ($LASTEXITCODE -ne 0) {
+        throw "Part-chunked Full Book PDF build failed (exit $LASTEXITCODE)"
+    }
 }
 $compiledCount++
 

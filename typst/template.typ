@@ -17,6 +17,9 @@
   subtitle: "2027年4月改定・新リース会計基準（第34号）完全準拠",
   generated-at: "",
   is-full-book: true,
+  start-page: 1,
+  total-pages: none,
+  custom-toc: none,
   doc
 ) = {
   set document(title: title, author: "Boki 1-Kyu Curriculum Studio")
@@ -40,7 +43,11 @@
     footer: context {
       if counter(page).get().first() > 1 or not is-full-book {
         set text(size: 8.5pt, fill: slate-muted, font: ("Yu Gothic", "BIZ UDPGothic", "Meiryo"))
-        align(center)[#counter(page).display("1 / 1", both: true)]
+        if total-pages != none {
+          align(center)[#counter(page).display() / #total-pages]
+        } else {
+          align(center)[#counter(page).display("1 / 1", both: true)]
+        }
       }
     }
   )
@@ -132,12 +139,20 @@
     pagebreak()
 
     // Table of Contents
-    outline(
-      title: text(size: 15pt, weight: "bold", fill: indigo-dark, "目次"),
-      depth: 2,
-      indent: 1.2em
-    )
-    pagebreak()
+    if custom-toc != none {
+      custom-toc
+    } else {
+      outline(
+        title: text(size: 15pt, weight: "bold", fill: indigo-dark, "目次"),
+        depth: 2,
+        indent: 1.2em
+      )
+      pagebreak()
+    }
+  }
+
+  if start-page > 1 {
+    counter(page).update(start-page)
   }
 
   doc
