@@ -1,0 +1,25 @@
+{
+  "name": "日商簿記 3級→1級 貫通カリキュラム",
+  "short_name": "簿記1級道場",
+  "description": "2027年新区分対応・簿記3級から1級まで学び直しゼロの貫通教材＆5モード学習スタジオ",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#1e3a8a",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

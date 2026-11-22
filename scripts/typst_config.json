@@ -1,0 +1,18 @@
+{
+  "book_title": "日商簿記 3級→1級 貫通カリキュラム教材",
+  "book_subtitle": "2027年4月改定・新リース会計基準（企業会計基準第34号）完全準拠",
+  "trap_markers": [
+    "出題者の意図",
+    "誤答パターン分析"
+  ],
+  "example_markers": [
+    "並走例題"
+  ],
+  "pagebreak_before_headings": [
+    "## 6."
+  ],
+  "journal_headers": [
+    "借方金額",
+    "貸方金額"
+  ]
+}

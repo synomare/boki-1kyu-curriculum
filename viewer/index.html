@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="簿記1級道場" />
+  <meta name="theme-color" content="#1e3a8a" />
+  <title>日商簿記 3級→1級 貫通カリキュラム学習スタジオ</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
+  <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+  <link rel="stylesheet" href="./styles.css" />
+  <!-- Optional progressive enhancement for LaTeX math & Mermaid diagrams when online -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-left">
+      <button id="mobileMenuBtn" class="icon-btn mobile-only" title="メニュー切替" aria-label="メニュー切替">☰</button>
+      <div class="brand">
+        <span class="brand-badge">2027年新区分対応</span>
+        <h1 class="brand-title">日商簿記 3級→1級 貫通カリキュラム</h1>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input id="searchInput" type="search" placeholder="単元名・ID・理論キーワードで検索..." autocomplete="off" />
+      </div>
+      <div class="progress-summary" title="公開済み単元のマスター進捗">
+        <div class="progress-labels">
+          <span id="masteredCountLabel">習得 0 / 0</span>
+          <span id="publishedCountLabel">公開 60 / 60単元</span>
+        </div>
+        <div class="progress-track">
+          <div id="masteredBar" class="progress-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="studio-mode-group" role="tablist" aria-label="学習モード切替">
+        <button id="modeReaderBtn" class="tool-btn mode-btn active" data-studio-mode="reader" title="教材テキストを読む">
+          <span>📖</span><span class="btn-label">教材</span>
+        </button>
+        <button id="modeDrillBtn" class="tool-btn mode-btn" data-studio-mode="drill" title="問題文・解説完全紐付け！入力自動採点＆高速フラッシュカード仕訳道場">
+          <span>⚔️</span><span class="btn-label">仕訳道場</span>
+        </button>
+        <button id="modeSimBtn" class="tool-btn mode-btn" data-studio-mode="sim" title="シュラッター図・CVP・新リース・NPV・定率法の5大インタラクティブシミュレータ">
+          <span>🧮</span><span class="btn-label">シミュレータ</span>
+        </button>
+        <button id="modeAnalyticsBtn" class="tool-btn mode-btn" data-studio-mode="analytics" title="級別/ライン別進捗と分散復習リマインダー">
+          <span>📊</span><span class="btn-label">学習分析</span>
+        </button>
+        <button id="modeCheatBtn" class="tool-btn mode-btn" data-studio-mode="cheat" title="Part VII 本質チートシート＆赤シート暗記モード">
+          <span>⚡</span><span class="btn-label">暗記シート</span>
+        </button>
+      </div>
+      <button id="focusCoreBtn" class="tool-btn" title="セクション3の未来フックを折りたたみ、今級コアに集中します">
+        <span>🎯</span><span class="btn-label">今級集中</span>
+      </button>
+      <button id="timerToggleBtn" class="tool-btn" title="演習タイマーを開く">
+        <span>⏱</span><span class="btn-label">タイマー</span>
+      </button>
+      <button id="scratchToggleBtn" class="tool-btn" title="1級仕様下書きパッド＆電卓を開く">
+        <span>📐</span><span class="btn-label">下書き＆電卓</span>
+      </button>
+      <a id="fullPdfLink" class="tool-btn pdf-link-btn hidden" href="../dist/pdf/boki-1kyu-curriculum.pdf" target="_blank" rel="noopener noreferrer" title="Typst製 完全合本PDFを開く">
+        <span>📄</span><span class="btn-label">完全版PDF</span>
+      </a>
+      <button id="themeToggle" class="icon-btn" title="ライト／ダークテーマ切替" aria-label="テーマ切替">🌙</button>
+      <div class="data-menu">
+        <button id="exportStateBtn" class="icon-btn" title="学習記録をJSONで書き出す">⬇</button>
+        <label class="icon-btn import-label" title="学習記録JSONを読み込む">
+          ⬆<input id="importStateInput" type="file" accept="application/json" hidden />
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-controls">
+        <div class="tab-group" role="tablist">
+          <button id="tabByPart" class="tab-btn active" data-mode="part">級別 (Part I–VII)</button>
+          <button id="tabByLine" class="tab-btn" data-mode="line">貫通ライン別</button>
+        </div>
+        <label class="filter-toggle">
+          <input id="onlyAvailableChk" type="checkbox" />
+          <span>公開済みのみ表示</span>
+        </label>
+      </div>
+      <nav id="sidebarNav" class="sidebar-nav" aria-label="カリキュラム目次"></nav>
+    </aside>
+
+    <main id="mainContent" class="main-content">
+      <div id="readerView" class="studio-view">
+        <div id="docToolbar" class="doc-toolbar">
+          <div id="docMetaBadges" class="doc-meta-badges"></div>
+          <div class="doc-toolbar-right">
+            <a id="unitPdfLink" class="tool-btn pdf-link-btn hidden" href="#" target="_blank" rel="noopener noreferrer" title="この単元のTypst PDFを開く">
+              <span>📄</span><span>単元PDF</span>
+            </a>
+            <div id="reviewTracker" class="review-tracker" title="分散学習・復習完了日を記録">
+            <span class="tracker-label">復習記録:</span>
+            <button class="day-btn" data-day="day0">Day 0</button>
+            <button class="day-btn" data-day="day1">Day 1</button>
+            <button class="day-btn" data-day="day7">Day 7</button>
+            <button class="day-btn" data-day="day21">Day 21</button>
+            </div>
+          </div>
+        </div>
+
+        <article id="articleBody" class="article-body"></article>
+
+        <footer class="doc-footer-nav">
+          <button id="prevDocBtn" class="nav-pill" disabled>← 前の単元</button>
+          <button id="nextDocBtn" class="nav-pill" disabled>次の単元 →</button>
+        </footer>
+      </div>
+
+      <section id="drillView" class="studio-view hidden" aria-label="仕訳道場"></section>
+      <section id="simView" class="studio-view hidden" aria-label="会計・原価シミュレータ"></section>
+      <section id="analyticsView" class="studio-view hidden" aria-label="学習アナリティクス"></section>
+      <section id="cheatView" class="studio-view hidden" aria-label="本質チートシート＆暗記シート"></section>
+    </main>
+
+    <aside class="toc-sidebar">
+      <div class="toc-sticky">
+        <div class="toc-title">このページの構成</div>
+        <nav id="tocNav" class="toc-nav"></nav>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Exercise Timer Floating Panel -->
+  <section id="timerPanel" class="floating-panel hidden" aria-label="演習タイマー">
+    <div class="panel-header">
+      <span>⏱ 演習タイマー</span>
+      <button class="panel-close" data-close="timerPanel">✕</button>
+    </div>
+    <div class="panel-body">
+      <div id="timerDisplay" class="timer-display">25:00</div>
+      <div class="timer-presets">
+        <button class="preset-btn" data-mins="20">20分</button>
+        <button class="preset-btn" data-mins="30">30分</button>
+        <button class="preset-btn" data-mins="35">35分</button>
+        <button class="preset-btn" data-mins="60">60分</button>
+        <button class="preset-btn" data-mins="0">計測</button>
+      </div>
+      <div class="timer-controls">
+        <button id="timerStartBtn" class="primary-btn">開始</button>
+        <button id="timerPauseBtn" class="secondary-btn">停止</button>
+        <button id="timerResetBtn" class="secondary-btn">リセット</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1-Kyu Drafting Scratchpad & Safe Calculator Panel -->
+  <section id="scratchPanel" class="floating-panel wide-panel hidden" aria-label="下書きスクラッチパッドと電卓">
+    <div class="panel-header">
+      <span>📐 1級仕様 下書きパッド＆電卓（単元別自動保存）</span>
+      <button class="panel-close" data-close="scratchPanel">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="calc-bar">
+        <input id="calcInput" type="text" placeholder="計算式 (例: 630000*0.02)" autocomplete="off" />
+        <button id="calcEvalBtn" class="primary-btn">＝</button>
+        <div id="calcResult" class="calc-result">0</div>
+      </div>
+      <div id="calcHistory" class="calc-history"></div>
+      <div class="tpl-bar">
+        <span>型挿入:</span>
+        <button class="tpl-btn" data-tpl="box">型02 ボックス図</button>
+        <button class="tpl-btn" data-tpl="timeline">型01 タイムライン</button>
+        <button class="tpl-btn" data-tpl="taccount">型03 T勘定</button>
+        <button id="clearScratchBtn" class="tpl-btn danger">クリア</button>
+      </div>
+      <textarea id="scratchTextarea" class="scratch-textarea" placeholder="ここにボックス図・タイムライン・途中式を書きながら演習できます..."></textarea>
+    </div>
+  </section>
+
+  <script src="./curriculum_data.js"></script>
+  <script src="./app.js"></script>
+  <script src="./studio_tools.js"></script>
+</body>
+</html>

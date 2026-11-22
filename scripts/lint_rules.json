@@ -1,0 +1,84 @@
+{
+  "unit_folders": [
+    "01_level3",
+    "02_level2_commercial",
+    "03_level2_industrial",
+    "04_level1_commercial",
+    "05_level1_industrial"
+  ],
+  "extra_folders": [
+    "06_exam_mastery",
+    "07_cheatsheets"
+  ],
+  "required_headings": [
+    "## 0.",
+    "## 1.",
+    "## 2.",
+    "## 3.",
+    "## 4.",
+    "## 5.",
+    "## 6.",
+    "## 7."
+  ],
+  "sec0_required_fields": [
+    "対象単元",
+    "上位概念",
+    "関連するB/S・P/Lの急所",
+    "1級への進化ルート",
+    "習得目標時間"
+  ],
+  "sec3_required_labels": [
+    "今すぐ100%定着させるコア",
+    "未来の拡張フック"
+  ],
+  "sec4_required_terms": [
+    "出題者の意図"
+  ],
+  "sec5_forbidden_leaks": [
+    "解答",
+    "ヒント",
+    "正解",
+    "答え：",
+    "誤答パターン"
+  ],
+  "sec6_required_terms": [
+    "誤答パターン分析",
+    "問1",
+    "問2",
+    "問3"
+  ],
+  "journal_headers": {
+    "debit_subject": "借方科目",
+    "debit_amount": "借方金額",
+    "credit_subject": "貸方科目",
+    "credit_amount": "貸方金額",
+    "group_columns": [
+      "取引",
+      "日付",
+      "No.",
+      "仕訳",
+      "整理"
+    ]
+  },
+  "forbidden_mnemonics": [
+    "しーくりくりしー",
+    "シークリクリシー",
+    "語呂合わせで覚え"
+  ],
+  "deprecated_2027_terms": [
+    "約束手形",
+    "為替手形",
+    "受取手形",
+    "支払手形",
+    "他人振出小切手",
+    "自己振出小切手",
+    "当座小切手"
+  ],
+  "deprecated_allow_markers": [
+    "2027年3月までの経過論点",
+    "2027年4月改定",
+    "廃止"
+  ],
+  "yen_suffix": "円",
+  "checklist_prefix": "- [ ]"
+}
