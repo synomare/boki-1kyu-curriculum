@@ -2,7 +2,7 @@
 #show: book-doc.with(
   title: "日商簿記 3級→1級 貫通カリキュラム教材",
   subtitle: "2027年4月改定・新リース会計基準（企業会計基準第34号）完全準拠",
-  generated-at: "2026-11-23 01:07",
+  generated-at: "2026-11-23 01:21",
   is-full-book: true,
 )
 #pagebreak(weak: true)
