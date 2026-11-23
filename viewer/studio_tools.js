@@ -177,7 +177,7 @@
       level = 2;
       drillState.gradeResult = {
         status: "perfect",
-        message: "🎉 完全正解！科目・金額・貸借すべて一致しています。",
+        message: "完全正解 — 科目・金額・貸借すべて一致しています。",
         dUserSum: user.dSum,
         cUserSum: user.cSum
       };
@@ -185,7 +185,7 @@
       level = 1;
       drillState.gradeResult = {
         status: "partial",
-        message: "🟡 惜しい！勘定科目は完全一致ですが、金額または貸借の配分を見直しましょう。",
+        message: "惜しい — 勘定科目は完全一致ですが、金額または貸借の配分を見直しましょう。",
         dUserSum: user.dSum,
         cUserSum: user.cSum
       };
@@ -193,7 +193,7 @@
       level = 0;
       drillState.gradeResult = {
         status: "wrong",
-        message: "🔴 不正解（要復習）。下の模範仕訳と「誤答パターン分析」を確認しましょう。",
+        message: "不正解（要復習）— 下の模範仕訳と誤答パターン分析を確認しましょう。",
         dUserSum: user.dSum,
         cUserSum: user.cSum
       };
@@ -344,10 +344,10 @@
     const cCnt = (DATA.calcDrills || []).length;
     const tCnt = (DATA.theoryDrills || []).length;
     const tabs = [
-      { id: "journal", label: "✍️ 仕訳道場 (" + jCnt + ")" },
-      { id: "calc", label: "🏭 工簿・原計 数値道場 (" + cCnt + ")" },
-      { id: "theory", label: "🧠 理論 穴埋め道場 (" + tCnt + ")" },
-      { id: "cbt", label: "📝 本番CBT模試" }
+      { id: "journal", label: "仕訳 (" + jCnt + ")" },
+      { id: "calc", label: "工簿数値 (" + cCnt + ")" },
+      { id: "theory", label: "理論穴埋め (" + tCnt + ")" },
+      { id: "cbt", label: "CBT模試" }
     ];
     let h = '<div class="sim-tabs dojo-main-tabs">';
     tabs.forEach((t) => {
@@ -414,8 +414,8 @@
 
     let html = renderDojoTabBar() +
       '<div class="studio-header">' +
-      "<div><h2>⚔️ 仕訳道場 v2（問題文連動・自動採点＆高速SRS）</h2>" +
-      '<p class="studio-sub">全単元・模試の問題文と完全連動した<strong>' + allCards.length + '問</strong>。手入力で採点する「✍️ 入力採点モード」と、爆速周回用の「⚡ フラッシュカードモード」を切り替えられます。</p></div>' +
+      "<div><h2>仕訳道場</h2>" +
+      '<p class="studio-sub">全単元・模試の問題文と連動した <strong>' + allCards.length + '問</strong>。入力採点とフラッシュカードを切り替えられます。</p></div>' +
       '<div class="drill-stats-pills">' +
       '<span class="meta-pill accent">習得済 ' + masteredCnt + " / " + allCards.length + "</span>" +
       '<span class="meta-pill amber">要復習 ' + weakCnt + "件</span>" +
@@ -423,39 +423,41 @@
 
     html += '<div class="drill-toolbar">';
     html += '<div class="drill-submode-tabs">';
-    html += '<button type="button" class="sim-tab-btn drill-submode-btn' + (drillState.mode === "input" ? " active" : "") + '" data-dmode="input">✍️ 入力・自動採点</button>';
-    html += '<button type="button" class="sim-tab-btn drill-submode-btn' + (drillState.mode === "flash" ? " active" : "") + '" data-dmode="flash">⚡ フラッシュカード</button>';
+    html += '<button type="button" class="sim-tab-btn drill-submode-btn' + (drillState.mode === "input" ? " active" : "") + '" data-dmode="input">入力・自動採点</button>';
+    html += '<button type="button" class="sim-tab-btn drill-submode-btn' + (drillState.mode === "flash" ? " active" : "") + '" data-dmode="flash">フラッシュカード</button>';
     html += "</div>";
 
-    html += '<select id="drillPartSelect" class="studio-select">';
+    html += '<div class="drill-filters-grid">';
+    html += '<select id="drillPartSelect" class="studio-select" aria-label="出題範囲を選択">';
     partOptions.forEach((op) => {
       html += '<option value="' + op.id + '"' + (drillState.part === op.id ? " selected" : "") + ">" + escapeHtml(op.label) + "</option>";
     });
     html += "</select>";
 
-    html += '<select id="drillDocSelect" class="studio-select">';
+    html += '<select id="drillDocSelect" class="studio-select" aria-label="単元を選択">';
     html += '<option value="">すべての単元</option>';
     Array.from(docMap.values()).forEach((d) => {
       html += '<option value="' + escapeHtml(d.id) + '"' + (drillState.docFilter === d.id ? " selected" : "") + ">" + escapeHtml(d.id + " (" + d.cnt + ")") + "</option>";
     });
     html += "</select>";
 
-    html += '<select id="drillQueueSelect" class="studio-select">';
+    html += '<select id="drillQueueSelect" class="studio-select" aria-label="出題フィルタを選択">';
     html += '<option value="all"' + (drillState.queueMode === "all" ? " selected" : "") + ">すべて表示</option>";
     html += '<option value="unmastered"' + (drillState.queueMode === "unmastered" ? " selected" : "") + ">未習得のみ</option>";
     html += '<option value="weak"' + (drillState.queueMode === "weak" ? " selected" : "") + ">要復習のみ</option>";
     html += "</select>";
 
-    html += '<button type="button" class="mask-btn" id="drillShuffleBtn">🔀 シャッフル</button>';
-    html += '<button type="button" class="primary-btn" id="drillBlitzBtn">⚡ 10問アタック</button>';
-    html += "</div>";
+    html += '<div class="drill-quick-actions">';
+    html += '<button type="button" class="mask-btn" id="drillShuffleBtn">シャッフル</button>';
+    html += '<button type="button" class="primary-btn" id="drillBlitzBtn">10問アタック</button>';
+    html += "</div></div></div>";
 
     if (drillState.blitzActive) {
       const dispNum = Math.min(drillState.blitzCount + 1, drillState.blitzTotal);
       html +=
         '<div class="blitz-banner">' +
-        "<span>⚡ タイムアタック中: <strong>" + dispNum + " / " + drillState.blitzTotal + "問目</strong>（正解 " + drillState.blitzScore + "）</span>" +
-        '<span id="blitzTimerBadge">⏱ ' + drillState.blitzSec + "秒</span>" +
+        "<span>タイムアタック中: <strong>" + dispNum + " / " + drillState.blitzTotal + "問目</strong>（正解 " + drillState.blitzScore + "）</span>" +
+        '<span id="blitzTimerBadge">' + drillState.blitzSec + "秒</span>" +
         '<button type="button" class="mask-btn" id="blitzStopBtn">中断</button>' +
         "</div>";
     }
@@ -476,15 +478,15 @@
     const srsBadge = !srsRec
       ? '<span class="meta-pill">未学習</span>'
       : srsRec.level === 2
-      ? '<span class="meta-pill emerald-pill">🟢 自信あり</span>'
+      ? '<span class="meta-pill emerald-pill">自信あり</span>'
       : srsRec.level === 1
-      ? '<span class="meta-pill amber">🟡 あいまい</span>'
-      : '<span class="meta-pill danger-pill">🔴 要復習</span>';
+      ? '<span class="meta-pill amber">あいまい</span>'
+      : '<span class="meta-pill danger-pill">要復習</span>';
 
     html += '<div class="studio-card drill-card">';
     html +=
       '<div class="drill-card-meta">' +
-      '<div><span class="meta-pill accent">' + escapeHtml(card.docId) + "</span> " +
+      '<div class="drill-card-tags"><span class="meta-pill accent">' + escapeHtml(card.docId) + "</span> " +
       '<span class="meta-pill">' + escapeHtml(card.questionTitle || card.section) + "</span> " +
       '<span class="meta-pill">対象: ' + escapeHtml(card.targetLabel || card.prompt) + "</span> " +
       srsBadge + "</div>" +
@@ -498,11 +500,11 @@
     if (card.focusLine) {
       html +=
         '<div class="drill-focus-banner">' +
-        '<span class="focus-badge">🎯 今回の仕訳対象（No./取引: ' + escapeHtml(card.targetLabel) + "）</span>" +
+        '<span class="focus-badge">今回の仕訳対象（No./取引: ' + escapeHtml(card.targetLabel) + "）</span>" +
         '<div class="focus-text">' + formatInlineMd(card.focusLine) + "</div>" +
         "</div>";
     }
-    html += '<div class="drill-question-body">' + formatQuestionBodyHtml(card.questionBody, card.focusLine) + "</div>";
+    html += '<div class="drill-question-body" tabindex="0">' + formatQuestionBodyHtml(card.questionBody, card.focusLine) + "</div>";
     html += "</div>";
 
     if (drillState.mode === "input") {
@@ -517,22 +519,22 @@
       // Smart Subject Palette
       const palette = buildSubjectPalette(card);
       html += '<div class="subject-palette">';
-      html += '<span class="palette-lbl">📌 科目パレット（クリックで入力欄に挿入）:</span>';
+      html += '<span class="palette-lbl">科目パレット（タップで挿入）:</span>';
       palette.forEach((sub) => {
         html += '<button type="button" class="palette-chip" data-sub="' + escapeHtml(sub) + '">' + escapeHtml(sub) + "</button>";
       });
       html += "</div>";
 
       // Interactive Journal Input Table
-      html += '<div class="table-wrap"><table class="journal-table drill-input-table"><thead><tr><th>借方科目</th><th class="num">借方金額</th><th>貸方科目</th><th class="num">貸方金額</th><th style="width:40px;"></th></tr></thead><tbody>';
+      html += '<div class="table-wrap" tabindex="0"><table class="journal-table drill-input-table"><thead><tr><th>借方科目</th><th class="num">借方金額</th><th>貸方科目</th><th class="num">貸方金額</th><th style="width:40px;"><span class="sr-only">操作</span></th></tr></thead><tbody>';
       drillState.inputRows.forEach((r, idx) => {
         html +=
           "<tr>" +
-          '<td><input type="text" class="drill-cell-input sub-input" list="bokiSubjectsDatalist" data-row="' + idx + '" data-field="dSub" placeholder="借方科目..." value="' + escapeHtml(r.dSub) + '" /></td>' +
-          '<td><input type="text" inputmode="numeric" class="drill-cell-input amt-input num" data-row="' + idx + '" data-field="dAmt" placeholder="0" value="' + escapeHtml(r.dAmt) + '" /></td>' +
-          '<td><input type="text" class="drill-cell-input sub-input" list="bokiSubjectsDatalist" data-row="' + idx + '" data-field="cSub" placeholder="貸方科目..." value="' + escapeHtml(r.cSub) + '" /></td>' +
-          '<td><input type="text" inputmode="numeric" class="drill-cell-input amt-input num" data-row="' + idx + '" data-field="cAmt" placeholder="0" value="' + escapeHtml(r.cAmt) + '" /></td>' +
-          '<td>' + (drillState.inputRows.length > 1 ? '<button type="button" class="row-del-btn" data-del-row="' + idx + '" title="行を削除">✕</button>' : "") + "</td>" +
+          '<td data-label="借方科目"><input type="text" class="drill-cell-input sub-input" list="bokiSubjectsDatalist" data-row="' + idx + '" data-field="dSub" aria-label="行' + (idx + 1) + ' 借方科目" placeholder="借方科目..." value="' + escapeHtml(r.dSub) + '" /></td>' +
+          '<td data-label="借方金額"><input type="text" inputmode="numeric" class="drill-cell-input amt-input num" data-row="' + idx + '" data-field="dAmt" aria-label="行' + (idx + 1) + ' 借方金額" placeholder="0" value="' + escapeHtml(r.dAmt) + '" /></td>' +
+          '<td data-label="貸方科目"><input type="text" class="drill-cell-input sub-input" list="bokiSubjectsDatalist" data-row="' + idx + '" data-field="cSub" aria-label="行' + (idx + 1) + ' 貸方科目" placeholder="貸方科目..." value="' + escapeHtml(r.cSub) + '" /></td>' +
+          '<td data-label="貸方金額"><input type="text" inputmode="numeric" class="drill-cell-input amt-input num" data-row="' + idx + '" data-field="cAmt" aria-label="行' + (idx + 1) + ' 貸方金額" placeholder="0" value="' + escapeHtml(r.cAmt) + '" /></td>' +
+          '<td class="del-cell">' + (drillState.inputRows.length > 1 ? '<button type="button" class="row-del-btn" data-del-row="' + idx + '" title="行を削除" aria-label="行' + (idx + 1) + 'を削除">✕</button>' : "") + "</td>" +
           "</tr>";
       });
       html += "</tbody></table></div>";
@@ -545,7 +547,7 @@
       if (drillState.showHint) {
         html +=
           '<div class="drill-hint-box">' +
-          "💡 <strong>ヒント</strong>：模範仕訳は <strong>" + card.rows.length + "行</strong>。" +
+          "<strong>ヒント</strong>：模範仕訳は <strong>" + card.rows.length + "行</strong>。" +
           "使う科目ヒント：<code>" +
           card.rows.map((r) => [r.dSub ? r.dSub[0] + "…" : "", r.cSub ? r.cSub[0] + "…" : ""].filter(Boolean).join(" / ")).join(" | ") +
           "</code></div>";
@@ -553,9 +555,9 @@
 
       html += '<div class="drill-controls-row">';
       html += '<div class="drill-reveal-btns">';
-      html += '<button type="button" class="primary-btn" id="drillCheckBtn">✔ 判定する（採点）</button>';
-      html += '<button type="button" class="secondary-btn" id="drillHintBtn">💡 ヒント</button>';
-      html += '<button type="button" class="mask-btn" id="drillOpenDocBtn">📖 単元テキスト</button>';
+      html += '<button type="button" class="primary-btn" id="drillCheckBtn">判定する（採点）</button>';
+      html += '<button type="button" class="secondary-btn" id="drillHintBtn">ヒント</button>';
+      html += '<button type="button" class="mask-btn" id="drillOpenDocBtn">単元テキスト</button>';
       html += "</div>";
       html += '<div class="drill-nav-btns">';
       html += '<button type="button" class="mask-btn" id="drillPrevBtn">← 前</button>';
@@ -568,20 +570,20 @@
         html += '<div class="grade-result-box ' + cls + '">';
         html += '<div class="grade-msg">' + escapeHtml(res.message) + "</div>";
         html += '<div class="grade-answer-title">模範仕訳</div>';
-        html += '<div class="table-wrap"><table class="journal-table drill-table"><thead><tr><th>借方科目</th><th class="num">借方金額</th><th>貸方科目</th><th class="num">貸方金額</th></tr></thead><tbody>';
+        html += '<div class="table-wrap" tabindex="0"><table class="journal-table drill-table"><thead><tr><th>借方科目</th><th class="num">借方金額</th><th>貸方科目</th><th class="num">貸方金額</th></tr></thead><tbody>';
         card.rows.forEach((r) => {
           html += "<tr><td>" + escapeHtml(r.dSub) + '</td><td class="num">' + escapeHtml(r.dAmt) + "</td><td>" + escapeHtml(r.cSub) + '</td><td class="num">' + escapeHtml(r.cAmt) + "</td></tr>";
         });
         html += "</tbody></table></div>";
         if (card.explanation) {
-          html += '<div class="drill-explanation-box"><strong>📝 解説・誤答パターン分析</strong><div class="exp-body">' + formatQuestionBodyHtml(card.explanation, "") + "</div></div>";
+          html += '<div class="drill-explanation-box"><strong>解説・誤答パターン分析</strong><div class="exp-body">' + formatQuestionBodyHtml(card.explanation, "") + "</div></div>";
         }
         html += '<div style="margin-top:12px;"><button type="button" class="primary-btn" id="drillAfterGradeNextBtn">次の問題へ →</button></div>';
         html += "</div>";
       }
     } else {
       // Flashcard Mode
-      html += '<div class="table-wrap"><table class="journal-table drill-table"><thead><tr><th>借方科目</th><th class="num">借方金額</th><th>貸方科目</th><th class="num">貸方金額</th></tr></thead><tbody>';
+      html += '<div class="table-wrap" tabindex="0"><table class="journal-table drill-table"><thead><tr><th>借方科目</th><th class="num">借方金額</th><th>貸方科目</th><th class="num">貸方金額</th></tr></thead><tbody>';
       card.rows.forEach((r) => {
         const showSub = drillState.revealStep >= 1;
         const showAmt = drillState.revealStep >= 2;
@@ -594,14 +596,14 @@
       html += "</tbody></table></div>";
 
       if (drillState.revealStep >= 2 && card.explanation) {
-        html += '<div class="drill-explanation-box"><strong>📝 解説・誤答パターン分析</strong><div class="exp-body">' + formatQuestionBodyHtml(card.explanation, "") + "</div></div>";
+        html += '<div class="drill-explanation-box"><strong>解説・誤答パターン分析</strong><div class="exp-body">' + formatQuestionBodyHtml(card.explanation, "") + "</div></div>";
       }
 
       html += '<div class="drill-controls-row">';
       html += '<div class="drill-reveal-btns">';
-      html += '<button type="button" class="secondary-btn" id="drillRevealSubBtn">👁 科目だけ表示</button>';
-      html += '<button type="button" class="primary-btn" id="drillRevealAllBtn">✨ すべて表示＆解説</button>';
-      html += '<button type="button" class="mask-btn" id="drillOpenDocBtn">📖 単元テキスト</button>';
+      html += '<button type="button" class="secondary-btn" id="drillRevealSubBtn">科目だけ表示</button>';
+      html += '<button type="button" class="primary-btn" id="drillRevealAllBtn">すべて表示＆解説</button>';
+      html += '<button type="button" class="mask-btn" id="drillOpenDocBtn">単元テキスト</button>';
       html += "</div>";
       html += '<div class="drill-nav-btns">';
       html += '<button type="button" class="mask-btn" id="drillPrevBtn">← 前</button>';
@@ -611,9 +613,9 @@
       html +=
         '<div class="drill-srs-bar">' +
         '<span class="srs-label">理解度記録 (SRS):</span>' +
-        '<button type="button" class="srs-btn srs-bad" data-lvl="0">🔴 要復習 (1)</button>' +
-        '<button type="button" class="srs-btn srs-mid" data-lvl="1">🟡 あいまい (2)</button>' +
-        '<button type="button" class="srs-btn srs-good" data-lvl="2">🟢 自信あり (3)</button>' +
+        '<button type="button" class="srs-btn srs-bad" data-lvl="0">要復習 (1)</button>' +
+        '<button type="button" class="srs-btn srs-mid" data-lvl="1">あいまい (2)</button>' +
+        '<button type="button" class="srs-btn srs-good" data-lvl="2">自信あり (3)</button>' +
         "</div>";
     }
 
@@ -763,12 +765,12 @@
     const masteredCnt = all.filter((c) => state.srs[c.id] && state.srs[c.id].level >= 2).length;
     let html = renderDojoTabBar() +
       '<div class="studio-header">' +
-      "<div><h2>🏭 工業簿記・原価計算 数値道場（全" + all.length + "問・厳密検算済）</h2>" +
+      "<div><h2>工業簿記・原価計算 数値道場（全" + all.length + "問）</h2>" +
       '<p class="studio-sub">シュラッター図・総合原価・標準原価・CVP・意思決定・NPVの計算力を数値入力で直接採点します。</p></div>' +
       '<div class="drill-stats-pills"><span class="meta-pill accent">習得済 ' + masteredCnt + " / " + all.length + "</span></div></div>";
 
     html += '<div class="drill-toolbar">';
-    html += '<select id="calcPartSel" class="studio-select">';
+    html += '<select id="calcPartSel" class="studio-select" aria-label="工簿範囲を選択">';
     html += '<option value="all"' + (calcDojoState.part === "all" ? " selected" : "") + ">全範囲 (" + all.length + ")</option>";
     html += '<option value="L2I"' + (calcDojoState.part === "L2I" ? " selected" : "") + ">2級 工業簿記 (" + all.filter((c) => c.part === "L2I").length + ")</option>";
     html += '<option value="L1I"' + (calcDojoState.part === "L1I" ? " selected" : "") + ">1級 工簿・原価計算 (" + all.filter((c) => c.part === "L1I").length + ")</option>";
@@ -784,7 +786,7 @@
     }
 
     const srsRec = state.srs[item.id];
-    const srsBadge = !srsRec ? '<span class="meta-pill">未学習</span>' : srsRec.level >= 2 ? '<span class="meta-pill emerald-pill">🟢 正解済</span>' : '<span class="meta-pill danger-pill">🔴 要復習</span>';
+    const srsBadge = !srsRec ? '<span class="meta-pill">未学習</span>' : srsRec.level >= 2 ? '<span class="meta-pill emerald-pill">正解済</span>' : '<span class="meta-pill danger-pill">要復習</span>';
 
     html += '<div class="studio-card drill-card">';
     html += '<div class="drill-card-meta"><div><span class="meta-pill accent">' + escapeHtml(item.docId) + '</span> <span class="meta-pill">' + escapeHtml(item.topic) + '</span> <span class="meta-pill">' + escapeHtml(item.format) + "</span> " + srsBadge + '</div><div class="drill-counter">' + (calcDojoState.idx + 1) + " / " + list.length + "</div></div>";
@@ -802,8 +804,8 @@
     html += "</div>";
 
     html += '<div class="drill-controls-row"><div class="drill-reveal-btns">';
-    html += '<button type="button" class="primary-btn" id="calcCheckBtn">✔ 判定する（採点）</button>';
-    html += '<button type="button" class="mask-btn" id="calcOpenDocBtn">📖 単元テキスト</button>';
+    html += '<button type="button" class="primary-btn" id="calcCheckBtn">判定する（採点）</button>';
+    html += '<button type="button" class="mask-btn" id="calcOpenDocBtn">単元テキスト</button>';
     html += '</div><div class="drill-nav-btns">';
     html += '<button type="button" class="mask-btn" id="calcPrevBtn">← 前</button>';
     html += '<button type="button" class="mask-btn" id="calcNextBtn">次 →</button>';
@@ -815,7 +817,7 @@
       html += '<div class="grade-result-box ' + (r.ok ? "grade-perfect" : "grade-wrong") + '">';
       html += '<div class="grade-msg">' + escapeHtml(r.msg) + "</div>";
       html += '<div style="margin-bottom:8px;"><strong>正解：</strong><code>' + fmtNum(item.answerNum, String(item.answerNum).includes(".") ? 1 : 0) + escapeHtml(item.answerUnit + signJp) + "</code></div>";
-      html += '<div class="drill-explanation-box"><strong>📐 計算式・解説</strong><div><code>' + escapeHtml(item.formula) + '</code></div><div class="exp-body">' + escapeHtml(item.explanation) + "</div></div>";
+      html += '<div class="drill-explanation-box"><strong>計算式・解説</strong><div><code>' + escapeHtml(item.formula) + '</code></div><div class="exp-body">' + escapeHtml(item.explanation) + "</div></div>";
       html += '<div style="margin-top:12px;"><button type="button" class="primary-btn" id="calcAfterNextBtn">次の問題へ →</button></div>';
       html += "</div>";
     }
@@ -849,7 +851,7 @@
       saveState();
       calcDojoState.result = {
         ok,
-        msg: ok ? "🎉 正解！計算ロジックが正確に身についています。" : (!numMatch ? "🔴 数値が異なります。下の公式と下書き型を確認しましょう。" : "🟡 数値は正解ですが、有利差異／不利差異の判定が逆です！")
+        msg: ok ? "正解 — 計算ロジックが正確に身についています。" : (!numMatch ? "数値が異なります。下の公式と下書き型を確認しましょう。" : "数値は正解ですが、有利差異／不利差異の判定が逆です。")
       };
       renderCalcDojo(root);
     };
@@ -892,12 +894,12 @@
     const masteredCnt = all.filter((t) => state.srs[t.id] && state.srs[t.id].level >= 2).length;
     let html = renderDojoTabBar() +
       '<div class="studio-header">' +
-      "<div><h2>🧠 1級会計学・原価計算 理論穴埋め道場（全" + all.length + "問）</h2>" +
+      "<div><h2>1級会計学・原価計算 理論穴埋め道場（全" + all.length + "問）</h2>" +
       '<p class="studio-sub">EX-05（頻出論証50選）と CS-05（理論キーワード80語）から抽出した空欄補充4択トレーニングです。</p></div>' +
       '<div class="drill-stats-pills"><span class="meta-pill accent">習得済 ' + masteredCnt + " / " + all.length + "</span></div></div>";
 
     html += '<div class="drill-toolbar">';
-    html += '<select id="theorySrcSel" class="studio-select">';
+    html += '<select id="theorySrcSel" class="studio-select" aria-label="理論出典を選択">';
     html += '<option value="all"' + (theoryDojoState.source === "all" ? " selected" : "") + ">すべて (" + all.length + ")</option>";
     html += '<option value="EX-05"' + (theoryDojoState.source === "EX-05" ? " selected" : "") + ">EX-05 1級重要論証 (" + all.filter((t) => t.source === "EX-05").length + ")</option>";
     html += '<option value="CS-05"' + (theoryDojoState.source === "CS-05" ? " selected" : "") + ">CS-05 理論キーワード (" + all.filter((t) => t.source === "CS-05").length + ")</option>";
@@ -938,9 +940,9 @@
     if (answered) {
       const ok = choices[theoryDojoState.pickedIdx] === item.answer;
       html += '<div class="grade-result-box ' + (ok ? "grade-perfect" : "grade-wrong") + '">';
-      html += '<div class="grade-msg">' + (ok ? "🎉 正解！" : "🔴 不正解。正解は「" + escapeHtml(item.answer) + "」です。") + "</div>";
-      html += '<div class="drill-explanation-box"><strong>📖 理論根拠・対比の急所</strong><div class="exp-body">' + formatInlineMd(item.explanation || item.prompt) + "</div></div>";
-      html += '<div class="drill-controls-row" style="margin-top:12px;"><button type="button" class="mask-btn" id="theoryOpenDocBtn">📖 関連単元を開く</button><button type="button" class="primary-btn" id="theoryAfterNextBtn">次の問題へ →</button></div>';
+      html += '<div class="grade-msg">' + (ok ? "正解！" : "不正解 — 正解は「" + escapeHtml(item.answer) + "」です。") + "</div>";
+      html += '<div class="drill-explanation-box"><strong>理論根拠・対比の急所</strong><div class="exp-body">' + formatInlineMd(item.explanation || item.prompt) + "</div></div>";
+      html += '<div class="drill-controls-row" style="margin-top:12px;"><button type="button" class="mask-btn" id="theoryOpenDocBtn">関連単元を開く</button><button type="button" class="primary-btn" id="theoryAfterNextBtn">次の問題へ →</button></div>';
       html += "</div>";
     } else {
       html += '<div class="drill-controls-row"><div class="drill-nav-btns"><button type="button" class="mask-btn" id="theoryPrevBtn">← 前</button><button type="button" class="mask-btn" id="theoryNextBtn">次 →</button></div></div>';
@@ -1002,22 +1004,22 @@
 
     let html = renderDojoTabBar() +
       '<div class="studio-header">' +
-      "<div><h2>📝 本番CBT模試ランナー（制限時間・一括採点・足切り判定）</h2>" +
+      "<div><h2>本番CBT模試ランナー</h2>" +
       '<p class="studio-sub">2027年新区分対応の模擬試験（第1回・第2回）を本番タイマー付きで通し演習し、70%合格ラインと40%足切りを診断します。</p></div>' +
-      '<div class="drill-stats-pills"><span id="cbtClockPill" class="meta-pill ' + (cbtState.started ? "danger-pill" : "accent") + '">⏱ ' + mm + ":" + ss + "</span></div></div>";
+      '<div class="drill-stats-pills"><span id="cbtClockPill" class="meta-pill ' + (cbtState.started ? "danger-pill" : "accent") + '">' + mm + ":" + ss + "</span></div></div>";
 
     html += '<div class="drill-toolbar">';
-    html += '<select id="cbtExamSel" class="studio-select">';
+    html += '<select id="cbtExamSel" class="studio-select" aria-label="模擬試験を選択">';
     CBT_EXAMS.forEach((ex) => {
       html += '<option value="' + ex.id + '"' + (cbtState.examId === ex.id ? " selected" : "") + ">" + escapeHtml(ex.label) + "</option>";
     });
     html += "</select>";
     if (!cbtState.started) {
-      html += '<button type="button" class="primary-btn" id="cbtStartBtn">▶ 試験を開始する (' + examMeta.mins + "分)</button>";
+      html += '<button type="button" class="primary-btn" id="cbtStartBtn">試験を開始する (' + examMeta.mins + "分)</button>";
     } else {
       html += '<button type="button" class="mask-btn" id="cbtResetBtn">リセット</button>';
     }
-    html += '<button type="button" class="mask-btn" id="cbtOpenFullDocBtn">📖 模試全文・総合問題を見る</button>';
+    html += '<button type="button" class="mask-btn" id="cbtOpenFullDocBtn">模試全文・総合問題を見る</button>';
     html += "</div>";
 
     if (!cbtState.started && !cbtState.submitted) {
@@ -1104,11 +1106,11 @@
       html += '<div class="studio-card cbt-q-card">';
       html += '<div class="drill-card-meta"><div><span class="meta-pill accent">Q' + (idx + 1) + '</span> <span class="meta-pill">' + escapeHtml(c.section) + "</span></div></div>";
       html += '<div class="focus-text" style="margin-bottom:8px;">' + formatInlineMd(c.focusLine || c.questionBody) + "</div>";
-      html += '<div class="table-wrap"><table class="journal-table drill-input-table"><thead><tr><th>借方科目(主行)</th><th class="num">借方金額</th><th>貸方科目(主行)</th><th class="num">貸方金額</th></tr></thead><tbody><tr>';
-      html += '<td><input type="text" class="drill-cell-input cbt-inp" list="cbtSubjectsDatalist" data-cid="' + escapeHtml(c.id) + '" data-fld="dSub" value="' + escapeHtml(a.dSub) + '" placeholder="借方科目..." /></td>';
-      html += '<td><input type="text" inputmode="numeric" class="drill-cell-input num cbt-inp" data-cid="' + escapeHtml(c.id) + '" data-fld="dAmt" value="' + escapeHtml(a.dAmt) + '" placeholder="0" /></td>';
-      html += '<td><input type="text" class="drill-cell-input cbt-inp" list="cbtSubjectsDatalist" data-cid="' + escapeHtml(c.id) + '" data-fld="cSub" value="' + escapeHtml(a.cSub) + '" placeholder="貸方科目..." /></td>';
-      html += '<td><input type="text" inputmode="numeric" class="drill-cell-input num cbt-inp" data-cid="' + escapeHtml(c.id) + '" data-fld="cAmt" value="' + escapeHtml(a.cAmt) + '" placeholder="0" /></td>';
+      html += '<div class="table-wrap" tabindex="0"><table class="journal-table drill-input-table"><thead><tr><th>借方科目(主行)</th><th class="num">借方金額</th><th>貸方科目(主行)</th><th class="num">貸方金額</th></tr></thead><tbody><tr>';
+      html += '<td data-label="借方科目"><input type="text" class="drill-cell-input cbt-inp" list="cbtSubjectsDatalist" data-cid="' + escapeHtml(c.id) + '" data-fld="dSub" aria-label="Q' + (idx + 1) + ' 借方科目" value="' + escapeHtml(a.dSub) + '" placeholder="借方科目..." /></td>';
+      html += '<td data-label="借方金額"><input type="text" inputmode="numeric" class="drill-cell-input num cbt-inp" data-cid="' + escapeHtml(c.id) + '" data-fld="dAmt" aria-label="Q' + (idx + 1) + ' 借方金額" value="' + escapeHtml(a.dAmt) + '" placeholder="0" /></td>';
+      html += '<td data-label="貸方科目"><input type="text" class="drill-cell-input cbt-inp" list="cbtSubjectsDatalist" data-cid="' + escapeHtml(c.id) + '" data-fld="cSub" aria-label="Q' + (idx + 1) + ' 貸方科目" value="' + escapeHtml(a.cSub) + '" placeholder="貸方科目..." /></td>';
+      html += '<td data-label="貸方金額"><input type="text" inputmode="numeric" class="drill-cell-input num cbt-inp" data-cid="' + escapeHtml(c.id) + '" data-fld="cAmt" aria-label="Q' + (idx + 1) + ' 貸方金額" value="' + escapeHtml(a.cAmt) + '" placeholder="0" /></td>';
       html += "</tr></tbody></table></div>";
 
       if (cbtState.submitted) {
@@ -1174,7 +1176,7 @@
 
     let html =
       '<div class="studio-header">' +
-      "<div><h2>🧮 会計・原価計算 5大インタラクティブ・シミュレータ</h2>" +
+      "<div><h2>会計・原価計算 5大インタラクティブ・シミュレータ</h2>" +
       '<p class="studio-sub">パラメータを動かして「なぜその差異・数値・判断になるのか」をリアルタイムSVGと厳密表で体感します。</p></div></div>';
 
     html += '<div class="sim-tabs">';
@@ -1241,21 +1243,21 @@
 
       const svg =
         '<svg viewBox="0 0 ' + W + " " + H + '" class="sim-svg">' +
-        '<line x1="' + pL + '" y1="' + pT + '" x2="' + pL + '" y2="' + (H - pB) + '" stroke="currentColor" opacity="0.4"/>' +
-        '<line x1="' + pL + '" y1="' + (H - pB) + '" x2="' + (W - pR) + '" y2="' + (H - pB) + '" stroke="currentColor" opacity="0.4"/>' +
-        '<line x1="' + pL + '" y1="' + sy(fix) + '" x2="' + sx(maxX) + '" y2="' + sy(fix) + '" stroke="#94a3b8" stroke-dasharray="4,4"/>' +
-        '<line x1="' + pL + '" y1="' + sy(fix) + '" x2="' + sx(maxX) + '" y2="' + sy(fix + varR * maxX) + '" stroke="#3730a3" stroke-width="2.5"/>' +
-        '<line x1="' + pL + '" y1="' + sy(0) + '" x2="' + sx(maxX) + '" y2="' + sy(stdR * maxX) + '" stroke="#0f766e" stroke-width="2.5"/>' +
-        '<line x1="' + sx(actH) + '" y1="' + sy(0) + '" x2="' + sx(actH) + '" y2="' + sy(Math.max(actC, budAllow, applied)) + '" stroke="#b45309" stroke-dasharray="3,3"/>' +
-        '<line x1="' + sx(base) + '" y1="' + sy(0) + '" x2="' + sx(base) + '" y2="' + sy(fix + varR * base) + '" stroke="#64748b" stroke-dasharray="3,3"/>' +
-        '<circle cx="' + sx(actH) + '" cy="' + sy(actC) + '" r="5" fill="#b91c1c"/>' +
-        '<circle cx="' + sx(actH) + '" cy="' + sy(budAllow) + '" r="4.5" fill="#3730a3"/>' +
-        '<circle cx="' + sx(actH) + '" cy="' + sy(applied) + '" r="4.5" fill="#0f766e"/>' +
-        '<text x="' + (sx(actH) + 6) + '" y="' + (sy(actC) - 4) + '" font-size="11" fill="#b91c1c">実際発生</text>' +
-        '<text x="' + (sx(actH) + 6) + '" y="' + (sy(budAllow) - 4) + '" font-size="11" fill="#3730a3">予算許容</text>' +
-        '<text x="' + (sx(actH) + 6) + '" y="' + (sy(applied) + 12) + '" font-size="11" fill="#0f766e">予定配賦</text>' +
+        '<line x1="' + pL + '" y1="' + pT + '" x2="' + pL + '" y2="' + (H - pB) + '" stroke="currentColor" opacity="0.35"/>' +
+        '<line x1="' + pL + '" y1="' + (H - pB) + '" x2="' + (W - pR) + '" y2="' + (H - pB) + '" stroke="currentColor" opacity="0.35"/>' +
+        '<line x1="' + pL + '" y1="' + sy(fix) + '" x2="' + sx(maxX) + '" y2="' + sy(fix) + '" stroke="var(--border-strong)" stroke-dasharray="4,4"/>' +
+        '<line x1="' + pL + '" y1="' + sy(fix) + '" x2="' + sx(maxX) + '" y2="' + sy(fix + varR * maxX) + '" stroke="var(--accent)" stroke-width="2.2"/>' +
+        '<line x1="' + pL + '" y1="' + sy(0) + '" x2="' + sx(maxX) + '" y2="' + sy(stdR * maxX) + '" stroke="var(--emerald)" stroke-width="2.2"/>' +
+        '<line x1="' + sx(actH) + '" y1="' + sy(0) + '" x2="' + sx(actH) + '" y2="' + sy(Math.max(actC, budAllow, applied)) + '" stroke="var(--amber)" stroke-dasharray="3,3"/>' +
+        '<line x1="' + sx(base) + '" y1="' + sy(0) + '" x2="' + sx(base) + '" y2="' + sy(fix + varR * base) + '" stroke="var(--text-muted)" stroke-dasharray="3,3"/>' +
+        '<circle cx="' + sx(actH) + '" cy="' + sy(actC) + '" r="4.5" fill="var(--vermilion)"/>' +
+        '<circle cx="' + sx(actH) + '" cy="' + sy(budAllow) + '" r="4" fill="var(--accent)"/>' +
+        '<circle cx="' + sx(actH) + '" cy="' + sy(applied) + '" r="4" fill="var(--emerald)"/>' +
+        '<text x="' + (sx(actH) + 6) + '" y="' + (sy(actC) - 4) + '" font-size="11" fill="var(--vermilion)">実際発生</text>' +
+        '<text x="' + (sx(actH) + 6) + '" y="' + (sy(budAllow) - 4) + '" font-size="11" fill="var(--accent)">予算許容</text>' +
+        '<text x="' + (sx(actH) + 6) + '" y="' + (sy(applied) + 12) + '" font-size="11" fill="var(--emerald)">予定配賦</text>' +
         '<text x="' + sx(base) + '" y="' + (H - 12) + '" font-size="10" text-anchor="middle" fill="currentColor">基準 ' + base + 'h</text>' +
-        '<text x="' + sx(actH) + '" y="' + (H - 2) + '" font-size="10" text-anchor="middle" fill="#b45309">実際 ' + actH + 'h</text>' +
+        '<text x="' + sx(actH) + '" y="' + (H - 2) + '" font-size="10" text-anchor="middle" fill="var(--amber)">実際 ' + actH + 'h</text>' +
         "</svg>";
       document.getElementById("schSvg").innerHTML = svg;
 
@@ -1312,21 +1314,21 @@
       let bepMark = "";
       if (isFinite(bepQ) && bepQ <= maxQ) {
         bepMark =
-          '<circle cx="' + sx(bepQ) + '" cy="' + sy(bepS) + '" r="5" fill="#b45309"/>' +
-          '<text x="' + (sx(bepQ) + 6) + '" y="' + (sy(bepS) - 6) + '" font-size="11" fill="#b45309">BEP ' + Math.round(bepQ) + "個</text>";
+          '<circle cx="' + sx(bepQ) + '" cy="' + sy(bepS) + '" r="4.5" fill="var(--amber)"/>' +
+          '<text x="' + (sx(bepQ) + 6) + '" y="' + (sy(bepS) - 6) + '" font-size="11" fill="var(--amber)">BEP ' + Math.round(bepQ) + "個</text>";
       }
 
       document.getElementById("cvpSvg").innerHTML =
         '<svg viewBox="0 0 ' + W + " " + H + '" class="sim-svg">' +
-        '<line x1="' + pL + '" y1="' + pT + '" x2="' + pL + '" y2="' + (H - pB) + '" stroke="currentColor" opacity="0.4"/>' +
-        '<line x1="' + pL + '" y1="' + (H - pB) + '" x2="' + (W - pR) + '" y2="' + (H - pB) + '" stroke="currentColor" opacity="0.4"/>' +
-        '<line x1="' + pL + '" y1="' + sy(f) + '" x2="' + sx(maxQ) + '" y2="' + sy(f) + '" stroke="#94a3b8" stroke-dasharray="4,4"/>' +
-        '<line x1="' + pL + '" y1="' + sy(f) + '" x2="' + sx(maxQ) + '" y2="' + sy(f + v * maxQ) + '" stroke="#b91c1c" stroke-width="2.5"/>' +
-        '<line x1="' + pL + '" y1="' + sy(0) + '" x2="' + sx(maxQ) + '" y2="' + sy(p * maxQ) + '" stroke="#0f766e" stroke-width="2.5"/>' +
-        '<line x1="' + sx(q) + '" y1="' + sy(0) + '" x2="' + sx(q) + '" y2="' + sy(Math.max(sales, totalC)) + '" stroke="#3730a3" stroke-dasharray="3,3"/>' +
+        '<line x1="' + pL + '" y1="' + pT + '" x2="' + pL + '" y2="' + (H - pB) + '" stroke="currentColor" opacity="0.35"/>' +
+        '<line x1="' + pL + '" y1="' + (H - pB) + '" x2="' + (W - pR) + '" y2="' + (H - pB) + '" stroke="currentColor" opacity="0.35"/>' +
+        '<line x1="' + pL + '" y1="' + sy(f) + '" x2="' + sx(maxQ) + '" y2="' + sy(f) + '" stroke="var(--border-strong)" stroke-dasharray="4,4"/>' +
+        '<line x1="' + pL + '" y1="' + sy(f) + '" x2="' + sx(maxQ) + '" y2="' + sy(f + v * maxQ) + '" stroke="var(--vermilion)" stroke-width="2.2"/>' +
+        '<line x1="' + pL + '" y1="' + sy(0) + '" x2="' + sx(maxQ) + '" y2="' + sy(p * maxQ) + '" stroke="var(--emerald)" stroke-width="2.2"/>' +
+        '<line x1="' + sx(q) + '" y1="' + sy(0) + '" x2="' + sx(q) + '" y2="' + sy(Math.max(sales, totalC)) + '" stroke="var(--accent)" stroke-dasharray="3,3"/>' +
         bepMark +
-        '<text x="' + (W - 75) + '" y="' + (sy(p * maxQ) + 12) + '" font-size="11" fill="#0f766e">売上高線</text>' +
-        '<text x="' + (W - 75) + '" y="' + (sy(f + v * maxQ) + 12) + '" font-size="11" fill="#b91c1c">総原価線</text>' +
+        '<text x="' + (W - 75) + '" y="' + (sy(p * maxQ) + 12) + '" font-size="11" fill="var(--emerald)">売上高線</text>' +
+        '<text x="' + (W - 75) + '" y="' + (sy(f + v * maxQ) + 12) + '" font-size="11" fill="var(--vermilion)">総原価線</text>' +
         "</svg>";
 
       document.getElementById("cvpKpi").innerHTML =
@@ -1463,9 +1465,9 @@
 
       document.getElementById("npvSvg").innerHTML =
         '<svg viewBox="0 0 ' + W + " " + H + '" class="sim-svg">' +
-        '<line x1="' + pL + '" y1="' + sy(0) + '" x2="' + (W - pR) + '" y2="' + sy(0) + '" stroke="currentColor" stroke-dasharray="4,4" opacity="0.5"/>' +
-        '<polyline fill="none" stroke="#3730a3" stroke-width="2.5" points="' + poly + '"/>' +
-        cumPoints.map((y, i) => '<circle cx="' + sx(i) + '" cy="' + sy(y) + '" r="4" fill="' + (y >= 0 ? "#0f766e" : "#b91c1c") + '"/><text x="' + sx(i) + '" y="' + (H - 8) + '" font-size="10" text-anchor="middle" fill="currentColor">T=' + i + "</text>").join("") +
+        '<line x1="' + pL + '" y1="' + sy(0) + '" x2="' + (W - pR) + '" y2="' + sy(0) + '" stroke="currentColor" stroke-dasharray="4,4" opacity="0.4"/>' +
+        '<polyline fill="none" stroke="var(--accent)" stroke-width="2.2" points="' + poly + '"/>' +
+        cumPoints.map((y, i) => '<circle cx="' + sx(i) + '" cy="' + sy(y) + '" r="4" fill="' + (y >= 0 ? "var(--emerald)" : "var(--vermilion)") + '"/><text x="' + sx(i) + '" y="' + (H - 8) + '" font-size="10" text-anchor="middle" fill="currentColor">T=' + i + "</text>").join("") +
         "</svg>";
 
       document.getElementById("npvKpi").innerHTML =
@@ -1526,21 +1528,21 @@
       for (let i = 0; i < totalYrs; i++) {
         const x0 = pL + i * grpW + 4;
         const bw = Math.max(6, (grpW - 12) / 2);
-        bars += '<rect x="' + x0 + '" y="' + sy(slList[i]) + '" width="' + bw + '" height="' + (H - pB - sy(slList[i])) + '" fill="#0f766e"/>';
-        bars += '<rect x="' + (x0 + bw + 2) + '" y="' + sy(dbList[i]) + '" width="' + bw + '" height="' + (H - pB - sy(dbList[i])) + '" fill="#3730a3"/>';
+        bars += '<rect x="' + x0 + '" y="' + sy(slList[i]) + '" width="' + bw + '" height="' + (H - pB - sy(slList[i])) + '" fill="var(--emerald)"/>';
+        bars += '<rect x="' + (x0 + bw + 2) + '" y="' + sy(dbList[i]) + '" width="' + bw + '" height="' + (H - pB - sy(dbList[i])) + '" fill="var(--accent)"/>';
         bars += '<text x="' + (x0 + bw) + '" y="' + (H - 8) + '" font-size="10" text-anchor="middle" fill="currentColor">' + (i + 1) + "年</text>";
       }
 
       document.getElementById("depSvg").innerHTML =
         '<svg viewBox="0 0 ' + W + " " + H + '" class="sim-svg">' +
-        '<line x1="' + pL + '" y1="' + (H - pB) + '" x2="' + (W - pR) + '" y2="' + (H - pB) + '" stroke="currentColor" opacity="0.4"/>' +
+        '<line x1="' + pL + '" y1="' + (H - pB) + '" x2="' + (W - pR) + '" y2="' + (H - pB) + '" stroke="currentColor" opacity="0.35"/>' +
         bars +
-        '<text x="' + (W - 140) + '" y="14" font-size="10" fill="#0f766e">■ 定額法</text>' +
-        '<text x="' + (W - 75) + '" y="14" font-size="10" fill="#3730a3">■ 200%定率法</text>' +
+        '<text x="' + (W - 140) + '" y="14" font-size="10" fill="var(--emerald)">■ 定額法</text>' +
+        '<text x="' + (W - 75) + '" y="14" font-size="10" fill="var(--accent)">■ 200%定率法</text>' +
         "</svg>";
 
       document.getElementById("depTbl").innerHTML =
-        '<div class="table-wrap"><table><thead><tr><th>年度</th><th class="num">定額法償却</th><th class="num">定額法簿価</th><th class="num">定率法償却</th><th class="num">定率法簿価</th></tr></thead><tbody>' +
+        '<div class="table-wrap" tabindex="0"><table><thead><tr><th>年度</th><th class="num">定額法償却</th><th class="num">定額法簿価</th><th class="num">定率法償却</th><th class="num">定率法簿価</th></tr></thead><tbody>' +
         rows + "</tbody></table></div>";
     };
     body.querySelectorAll("input").forEach((inp) => (inp.oninput = update));
@@ -1604,8 +1606,8 @@
 
     let html =
       '<div class="studio-header">' +
-      "<div><h2>📊 学習アナリティクス＆復習ダッシュボード</h2>" +
-      '<p class="studio-sub">全64巻の習得率、貫通ライン別バランス、分散復習スケジュール、仕訳道場の弱点を可視化します。</p></div></div>';
+      "<div><h2>学習アナリティクス＆復習ダッシュボード</h2>" +
+      '<p class="studio-sub">全単元の習得率、貫通ライン別バランス、分散復習スケジュール、仕訳道場の弱点を可視化します。</p></div></div>';
 
     html +=
       '<div class="kpi-grid">' +
@@ -1621,9 +1623,9 @@
     html += "</div>";
 
     html += '<div class="analytics-two-col">';
-    html += '<div class="studio-card"><h3>⏰ 分散復習リマインダー</h3>';
+    html += '<div class="studio-card"><h3>分散復習リマインダー</h3>';
     if (reminders.length === 0) {
-      html += '<p class="studio-sub">各単元右上の「Day 0」ボタンを押すと、Day 1 / Day 7 / Day 21 の復習キューが自動生成されます。</p>';
+      html += '<p class="studio-sub">各単元上部の「Day 0」ボタンを押すと、Day 1 / Day 7 / Day 21 の復習キューが自動生成されます。</p>';
     } else {
       reminders.slice(0, 10).forEach((rem) => {
         html +=
@@ -1634,9 +1636,9 @@
     }
     html += "</div>";
 
-    html += '<div class="studio-card"><h3>🎯 仕訳道場・弱点単元ランキング</h3>';
+    html += '<div class="studio-card"><h3>仕訳道場・弱点単元ランキング</h3>';
     if (weakUnits.length === 0) {
-      html += '<p class="studio-sub">仕訳道場で「🔴 要復習」に分類されたカードはありません。</p>';
+      html += '<p class="studio-sub">仕訳道場で「要復習」に分類されたカードはありません。</p>';
     } else {
       weakUnits.forEach((w) => {
         html +=
@@ -1790,10 +1792,10 @@
         '<div class="studio-card cheat-sheet-card">' +
         '<div class="cheat-card-head">' +
         '<div><span class="meta-pill accent">' + escapeHtml(tbl.docId) + '</span> <strong>' + escapeHtml(tbl.section) + '</strong></div>' +
-        '<button type="button" class="mask-btn cheat-open-doc" data-doc="' + escapeHtml(tbl.docId) + '">📖 このシートを全文で読む</button>' +
+        '<button type="button" class="mask-btn cheat-open-doc" data-doc="' + escapeHtml(tbl.docId) + '">全文で読む</button>' +
         '</div>' +
-        '<div class="cheat-table-wrap"><table class="cheat-table"><thead><tr>' +
-        '<th class="pin-col">📌</th>' +
+        '<div class="cheat-table-wrap" tabindex="0"><table class="cheat-table"><thead><tr>' +
+        '<th class="pin-col"><span class="sr-only">ピン留め</span>★</th>' +
         tbl.headers.map((h) => "<th>" + formatInlineCheat(h) + "</th>").join("") +
         "</tr></thead><tbody>";
 
@@ -1860,21 +1862,21 @@
 
     const tabs = [{ id: "all", label: "すべて" }]
       .concat(docs.map((d) => ({ id: d.id, label: d.id })))
-      .concat([{ id: "pinned", label: "📌 ピン留め (" + pinCount + ")" }]);
+      .concat([{ id: "pinned", label: "ピン留め (" + pinCount + ")" }]);
 
     if (!preserveInputFocus || !document.getElementById("cheatResults")) {
       let html =
         '<div class="studio-shell">' +
-        '<div class="studio-hero"><div>' +
-        '<h2>⚡ 本質チートシート＆赤シート暗記スタジオ</h2>' +
+        '<div class="studio-header"><div>' +
+        '<h2>本質チートシート＆赤シート暗記スタジオ</h2>' +
         '<p class="studio-sub">Part VII（CS-01〜CS-06）の全基準比較・仕訳トリガー・工簿公式・理論80語・罠を横断検索。赤シートONで答えのセルをタップ開示できます。</p>' +
         "</div>" +
         '<div class="cheat-top-actions">' +
         '<button type="button" id="cheatRedToggleBtn" class="tool-btn' + (cheatState.redSheet ? " active" : "") + '">' +
-        (cheatState.redSheet ? "🔴 赤シート ON" : "⚪ 赤シート OFF") +
+        (cheatState.redSheet ? "赤シート ON" : "赤シート OFF") +
         "</button>" +
         '<button type="button" id="cheatRevealAllBtn" class="mask-btn"' + (!cheatState.redSheet ? " disabled" : "") + ">" +
-        (cheatState.tempRevealAll ? "🙈 すべて再隠蔽" : "👁 すべて一時開示") +
+        (cheatState.tempRevealAll ? "すべて再隠蔽" : "すべて一時開示") +
         "</button>" +
         "</div></div>";
 
@@ -1918,7 +1920,7 @@
       });
     } else {
       const pinTab = root.querySelector('.cheat-tab-btn[data-ctab="pinned"]');
-      if (pinTab) pinTab.textContent = "📌 ピン留め (" + pinCount + ")";
+      if (pinTab) pinTab.textContent = "ピン留め (" + pinCount + ")";
     }
 
     renderCheatResults();
