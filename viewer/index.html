@@ -49,6 +49,7 @@
             <line x1="9.75" y1="4.25" x2="11.75" y2="6.25" />
           </svg>
           <span class="btn-label">道場</span>
+          <span id="drillDueBadge" class="nav-due-badge hidden" aria-label="今日の復習件数"></span>
         </button>
         <button id="modeSimBtn" class="tool-btn mode-btn" type="button" role="tab" aria-selected="false" data-studio-mode="sim" title="シュラッター図・CVP・新リース・NPV・定率法シミュレータ">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -209,12 +210,16 @@
           <input id="searchInput" type="search" placeholder="単元名・ID・キーワード検索..." autocomplete="off" aria-label="単元名・ID・理論キーワードで検索" />
         </div>
         <div class="tab-group" role="tablist" aria-label="目次表示切替">
-          <button id="tabByPart" class="tab-btn active" type="button" role="tab" aria-selected="true" data-mode="part">級別 (Part I–VII)</button>
+          <button id="tabByPart" class="tab-btn active" type="button" role="tab" aria-selected="true" data-mode="part">級別 (Part I–VIII)</button>
           <button id="tabByLine" class="tab-btn" type="button" role="tab" aria-selected="false" data-mode="line">貫通ライン別</button>
         </div>
         <label class="filter-toggle">
           <input id="onlyAvailableChk" type="checkbox" />
           <span>公開済みのみ表示</span>
+        </label>
+        <label class="filter-toggle">
+          <input id="onlyDueReviewChk" type="checkbox" />
+          <span>復習期限・要復習のみ</span>
         </label>
       </div>
       <nav id="sidebarNav" class="sidebar-nav" aria-label="カリキュラム単元一覧"></nav>
@@ -223,7 +228,7 @@
     <main id="mainContent" class="main-content" tabindex="-1">
       <div id="readerView" class="studio-view">
         <div id="docToolbar" class="doc-toolbar">
-          <div id="docMetaBadges" class="doc-meta-badges"></div>
+          <div id="docMetaBadges" class="doc-meta-badges" tabindex="0"></div>
           <div class="doc-toolbar-right">
             <a id="unitPdfLink" class="tool-btn pdf-link-btn hidden" href="#" target="_blank" rel="noopener noreferrer" title="この単元のTypst PDFを開く">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -243,6 +248,8 @@
         </div>
 
         <article id="articleBody" class="article-body"></article>
+
+        <section id="docBottomReviewBar" class="doc-bottom-review-bar hidden" aria-label="この単元の復習と演習"></section>
 
         <footer class="doc-footer-nav">
           <button id="prevDocBtn" class="nav-pill" type="button" disabled>← 前の単元</button>

@@ -230,6 +230,9 @@ function Extract-DrillCards {
         $Rules
     )
     $cards = New-Object System.Collections.Generic.List[object]
+    if ($Item.part -eq "practice" -or $Item.part -eq "guide") {
+        return $cards
+    }
     $lines = $MdContent -split "\r?\n"
     $cardSeq = 0
 

@@ -7,7 +7,8 @@
     { "id": "L1C", "name": "Part IV：簿記1級 商業簿記・会計学", "shortName": "1級商", "total": 15 },
     { "id": "L1I", "name": "Part V：簿記1級 工業簿記・原価計算", "shortName": "1級工", "total": 10 },
     { "id": "exam", "name": "Part VI：過去問攻略・実戦模試・理論論証", "shortName": "実戦", "total": 9 },
-    { "id": "cheat", "name": "Part VII：本質チートシート＆超高速暗記マスター", "shortName": "暗記", "total": 6 }
+    { "id": "cheat", "name": "Part VII：本質チートシート＆超高速暗記マスター", "shortName": "暗記", "total": 6 },
+    { "id": "practice", "name": "Part VIII：実務現場・財務分析・制度背景バイブル", "shortName": "実務", "total": 8 }
   ],
   "lines": [
     { "id": "Line G", "name": "共通理論・下書きの型", "description": "全単元に共通する設計思想・理論OS・下書き10型" },
@@ -99,6 +100,15 @@
     { "id": "CS-03", "part": "cheat", "path": "07_cheatsheets/CS-03_industrial_formulas_and_diagrams.md", "title": "工業簿記・原価計算 全公式＆差異分析・意思決定チートシート", "line": ["Line B", "Line F"], "formats": ["型02", "型05", "型06", "型10"], "minutes": 30, "importance": "★★★", "is2027New": false },
     { "id": "CS-04", "part": "cheat", "path": "07_cheatsheets/CS-04_drafting_quick_reference.md", "title": "1級貫通・下書き10型 クイックリファレンス（1枚即応カード）", "line": ["Line G"], "formats": ["型01", "型02", "型03", "型04", "型05", "型06", "型07", "型08", "型09", "型10"], "minutes": 20, "importance": "★★★", "is2027New": false },
     { "id": "CS-05", "part": "cheat", "path": "07_cheatsheets/CS-05_theory_keywords_flashbook.md", "title": "会計学・原価計算基準 理論キーワード＆定義「本質1行」暗記帳80語", "line": ["Line G", "Line A", "Line B", "Line C", "Line D", "Line E", "Line F"], "formats": [], "minutes": 40, "importance": "★★★", "is2027New": true },
-    { "id": "CS-06", "part": "cheat", "path": "07_cheatsheets/CS-06_exam_day_checklist_and_traps.md", "title": "試験直前30分ブースト＆失点ゼロ罠・電卓ワザ完全チェックリスト", "line": ["Line G"], "formats": ["型01", "型02", "型04", "型07", "型10"], "minutes": 25, "importance": "★★★", "is2027New": true }
+    { "id": "CS-06", "part": "cheat", "path": "07_cheatsheets/CS-06_exam_day_checklist_and_traps.md", "title": "試験直前30分ブースト＆失点ゼロ罠・電卓ワザ完全チェックリスト", "line": ["Line G"], "formats": ["型01", "型02", "型04", "型07", "型10"], "minutes": 25, "importance": "★★★", "is2027New": true },
+
+    { "id": "PR-01", "part": "practice", "path": "08_practice_and_analysis/PR-01_monthly_closing_and_pos_cash.md", "title": "月次決算の実務カレンダーとPOS・クレジット精算・資金消込", "line": ["Line A", "Line B", "Line D"], "formats": ["型03", "型04"], "minutes": 40, "importance": "★★★", "is2027New": true },
+    { "id": "PR-02", "part": "practice", "path": "08_practice_and_analysis/PR-02_inventory_fixed_assets_and_cost_ops.md", "title": "実地棚卸・固定資産台帳・工場原価計算の現場オペレーション", "line": ["Line B", "Line C", "Line F"], "formats": ["型01", "型02", "型05", "型06"], "minutes": 45, "importance": "★★★", "is2027New": true },
+    { "id": "PR-03", "part": "practice", "path": "08_practice_and_analysis/PR-03_closing_controls_jsox_and_audit.md", "title": "決算整理仕訳の内部統制・J-SOX・会計監査対応", "line": ["Line D", "Line E"], "formats": ["型07", "型09"], "minutes": 45, "importance": "★★★", "is2027New": false },
+    { "id": "PR-04", "part": "practice", "path": "08_practice_and_analysis/PR-04_financial_analysis_roa_ccc_safety.md", "title": "財務分析・投資家目線Ⅰ：ROA・ROE・CCC・安全性指標と簿記の接続", "line": ["Line A", "Line B", "Line E", "Line F"], "formats": ["型03", "型10"], "minutes": 45, "importance": "★★★", "is2027New": false },
+    { "id": "PR-05", "part": "practice", "path": "08_practice_and_analysis/PR-05_investor_lens_standards_and_valuation.md", "title": "財務分析・投資家目線Ⅱ：会計基準・見積りが企業価値と指標をどう変えるか", "line": ["Line C", "Line D", "Line E", "Line F"], "formats": ["型01", "型04", "型10"], "minutes": 50, "importance": "★★★", "is2027New": true },
+    { "id": "PR-06", "part": "practice", "path": "08_practice_and_analysis/PR-06_regulatory_and_standards_evolution.md", "title": "制度・法改正背景の完全ガイド：2027年改定・IFRS・3法トライアングル", "line": ["Line G", "Line A", "Line C", "Line D"], "formats": ["型09"], "minutes": 40, "importance": "★★★", "is2027New": true },
+    { "id": "PR-07", "part": "practice", "path": "08_practice_and_analysis/PR-07_business_models_and_fs_anatomy.md", "title": "ビジネスモデル別・決算書解剖図鑑（小売・SaaS・EC・製造・不動産・銀行）", "line": ["Line B", "Line C", "Line E", "Line F"], "formats": ["型03", "型10"], "minutes": 45, "importance": "★★★", "is2027New": true },
+    { "id": "PR-08", "part": "practice", "path": "08_practice_and_analysis/PR-08_cashflow_ma_and_fraud_anatomy.md", "title": "キャッシュフロー経営・資金繰り・M&Aと会計不正（粉飾）の解剖学", "line": ["Line A", "Line E", "Line F"], "formats": ["型07", "型09", "型10"], "minutes": 50, "importance": "★★★", "is2027New": false }
   ]
 }

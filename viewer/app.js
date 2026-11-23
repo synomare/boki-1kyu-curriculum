@@ -12,31 +12,312 @@
   let timerSeconds = 25 * 60;
   let timerCountdown = true;
 
+  const MISTAKE_REASONS = [
+    "科目・5要素誤認",
+    "金額・計算ミス",
+    "貸借逆・配分漏れ",
+    "基準・2027改定混同",
+    "問題文の読み落とし"
+  ];
+
+  const REVIEW_STAGE_GUIDE = {
+    day0: "初学完了（§1本質〜§5問1＋§7チェック）",
+    day1: "翌日確認（§1本質を見直し、§5問1を再解答）",
+    day7: "1週間後（下書き型を白紙再現し、§5問2に挑戦）",
+    day21: "3週間後（§7本質チェックリストと道場カードを最終確認）"
+  };
+
+  function defaultStateShape() {
+    return {
+      checks: {},
+      reviews: {},
+      notes: {},
+      srs: {},
+      mistakes: {},
+      studyLog: {},
+      cbtHistory: [],
+      prefs: { drillMode: "input", cbtView: "single", sessionLimit: 10 },
+      pastExamDone: {},
+      pinnedCheats: [],
+      theme: "light",
+      focusCore: false,
+      lastDocId: "G-00"
+    };
+  }
+
+  function migrateSrsState(st) {
+    if (!st || typeof st !== "object") return st;
+    if (!st.srs || typeof st.srs !== "object") st.srs = {};
+    if (!st.mistakes || typeof st.mistakes !== "object") st.mistakes = {};
+    if (!st.studyLog || typeof st.studyLog !== "object") st.studyLog = {};
+    if (!Array.isArray(st.cbtHistory)) st.cbtHistory = [];
+    st.prefs = Object.assign({ drillMode: "input", cbtView: "single", sessionLimit: 10 }, st.prefs || {});
+    if (!st.reviews || typeof st.reviews !== "object") st.reviews = {};
+    if (!st.checks || typeof st.checks !== "object") st.checks = {};
+    if (!st.notes || typeof st.notes !== "object") st.notes = {};
+
+    Object.keys(st.srs).forEach((id) => {
+      const rec = st.srs[id];
+      if (!rec || typeof rec !== "object") return;
+      if (!rec.dueAt) {
+        const baseMs = rec.updatedAt ? Date.parse(rec.updatedAt) : Date.now();
+        const safeBase = Number.isFinite(baseMs) ? baseMs : Date.now();
+        const lvl = Number(rec.level || 0);
+        if (lvl <= 0) {
+          st.srs[id] = {
+            level: 0,
+            reps: 0,
+            intervalDays: 0,
+            ease: 2.3,
+            lapses: 1,
+            updatedAt: rec.updatedAt || new Date(safeBase).toISOString(),
+            dueAt: new Date(safeBase).toISOString()
+          };
+        } else if (lvl === 1) {
+          st.srs[id] = {
+            level: 1,
+            reps: 1,
+            intervalDays: 1,
+            ease: 2.35,
+            lapses: 0,
+            updatedAt: rec.updatedAt || new Date(safeBase).toISOString(),
+            dueAt: new Date(safeBase + 86400000).toISOString()
+          };
+        } else {
+          st.srs[id] = {
+            level: 2,
+            reps: 2,
+            intervalDays: 6,
+            ease: 2.5,
+            lapses: 0,
+            updatedAt: rec.updatedAt || new Date(safeBase).toISOString(),
+            dueAt: new Date(safeBase + 6 * 86400000).toISOString()
+          };
+        }
+      } else {
+        if (typeof rec.reps !== "number") rec.reps = rec.level >= 2 ? 2 : rec.level === 1 ? 1 : 0;
+        if (typeof rec.intervalDays !== "number") rec.intervalDays = rec.level >= 2 ? 6 : rec.level === 1 ? 1 : 0;
+        if (typeof rec.ease !== "number") rec.ease = 2.5;
+        if (typeof rec.lapses !== "number") rec.lapses = rec.level === 0 ? 1 : 0;
+      }
+    });
+    return st;
+  }
+
   function loadState() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        return Object.assign({
-          checks: {},
-          reviews: {},
-          notes: {},
-          srs: {},
-          pastExamDone: {},
-          pinnedCheats: [],
-          theme: "light",
-          focusCore: false,
-          lastDocId: "G-00"
-        }, parsed);
+        return migrateSrsState(Object.assign(defaultStateShape(), parsed));
       }
     } catch (e) {}
-    return { checks: {}, reviews: {}, notes: {}, srs: {}, pastExamDone: {}, pinnedCheats: [], theme: "light", focusCore: false, lastDocId: "G-00" };
+    return defaultStateShape();
   }
 
   function saveState() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {}
+  }
+
+  function getTodayKey(dateObj) {
+    const d = dateObj || new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return y + "-" + m + "-" + day;
+  }
+
+  function recordStudyActivity(kind, isCorrect) {
+    const key = getTodayKey();
+    if (!state.studyLog[key]) {
+      state.studyLog[key] = { reviews: 0, correct: 0, units: 0, cbt: 0 };
+    }
+    const row = state.studyLog[key];
+    if (kind === "review") {
+      row.reviews = (row.reviews || 0) + 1;
+      if (isCorrect) row.correct = (row.correct || 0) + 1;
+    } else if (kind === "unit") {
+      row.units = (row.units || 0) + 1;
+    } else if (kind === "cbt") {
+      row.cbt = (row.cbt || 0) + 1;
+    }
+  }
+
+  function getStreakDays() {
+    let streak = 0;
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    const hasActivity = (key) => {
+      const r = state.studyLog && state.studyLog[key];
+      return !!(r && ((r.reviews || 0) + (r.units || 0) + (r.cbt || 0)) > 0);
+    };
+    if (!hasActivity(getTodayKey(d))) {
+      d.setDate(d.getDate() - 1);
+    }
+    while (hasActivity(getTodayKey(d))) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    }
+    return streak;
+  }
+
+  function previewSm2Interval(rec, quality) {
+    const prevReps = rec && typeof rec.reps === "number" ? rec.reps : 0;
+    const prevInterval = rec && typeof rec.intervalDays === "number" ? rec.intervalDays : 0;
+    const prevEase = rec && typeof rec.ease === "number" ? rec.ease : 2.5;
+    let reps = prevReps;
+    let intervalDays = 0;
+    let ease = prevEase;
+    if (quality === 0) {
+      reps = 0;
+      intervalDays = 0;
+      ease = Math.max(1.3, Number((prevEase - 0.2).toFixed(2)));
+    } else if (quality === 1) {
+      reps = Math.max(1, prevReps);
+      intervalDays = prevReps <= 1 ? 1 : Math.max(1, Math.round(prevInterval * 1.2));
+      ease = Math.max(1.3, Number((prevEase - 0.15).toFixed(2)));
+    } else if (quality === 2) {
+      reps = prevReps + 1;
+      if (reps === 1) intervalDays = 1;
+      else if (reps === 2) intervalDays = 6;
+      else intervalDays = Math.max(1, Math.round(prevInterval * prevEase));
+    } else {
+      reps = prevReps + 1;
+      if (reps === 1) intervalDays = 4;
+      else if (reps === 2) intervalDays = 10;
+      else intervalDays = Math.max(2, Math.round(prevInterval * prevEase * 1.3));
+      ease = Math.min(3.0, Number((prevEase + 0.15).toFixed(2)));
+    }
+    const level = quality === 0 ? 0 : quality === 1 ? 1 : 2;
+    const label = intervalDays === 0 ? "今日" : intervalDays + "日後";
+    return { reps, intervalDays, ease, level, label };
+  }
+
+  function recordSrsReview(cardId, quality, elapsedSec) {
+    const prev = state.srs[cardId];
+    const next = previewSm2Interval(prev, quality);
+    const nowMs = Date.now();
+    const dueMs = next.intervalDays === 0 ? nowMs : nowMs + next.intervalDays * 86400000;
+    const prevLapses = prev && typeof prev.lapses === "number" ? prev.lapses : 0;
+    state.srs[cardId] = {
+      level: next.level,
+      reps: next.reps,
+      intervalDays: next.intervalDays,
+      ease: next.ease,
+      lapses: quality === 0 ? prevLapses + 1 : prevLapses,
+      lastSec: typeof elapsedSec === "number" ? Math.round(elapsedSec) : (prev && prev.lastSec) || undefined,
+      updatedAt: new Date(nowMs).toISOString(),
+      dueAt: new Date(dueMs).toISOString()
+    };
+    recordStudyActivity("review", quality >= 2);
+    saveState();
+    updateDueBadge();
+    renderSidebar();
+    return state.srs[cardId];
+  }
+
+  function isCardDue(cardId, nowMs) {
+    const rec = state.srs[cardId];
+    if (!rec) return false;
+    if (!rec.dueAt) return true;
+    const ts = Date.parse(rec.dueAt);
+    return !Number.isFinite(ts) || ts <= (nowMs || Date.now());
+  }
+
+  function isCardLeech(cardId) {
+    const rec = state.srs[cardId];
+    return !!(rec && (rec.lapses >= 2 || rec.level === 0));
+  }
+
+  function getUnitReviewStatus(doc, nowMs) {
+    const r = (state.reviews && state.reviews[doc.id]) || {};
+    const stages = ["day0", "day1", "day7", "day21"];
+    const completedStages = stages.filter((k) => !!r[k]).length;
+    const curNow = nowMs || Date.now();
+    let nextStage = null;
+    let prevTs = null;
+    let waitDays = 0;
+    if (!r.day0) {
+      nextStage = "day0";
+    } else if (!r.day1) {
+      nextStage = "day1";
+      prevTs = r.day0;
+      waitDays = 1;
+    } else if (!r.day7) {
+      nextStage = "day7";
+      prevTs = r.day1;
+      waitDays = 6;
+    } else if (!r.day21) {
+      nextStage = "day21";
+      prevTs = r.day7;
+      waitDays = 14;
+    }
+    let dueAtMs = null;
+    let isDue = false;
+    let daysUntil = null;
+    let daysElapsed = 0;
+    if (nextStage && nextStage !== "day0") {
+      const baseMs = typeof prevTs === "string" ? Date.parse(prevTs) : NaN;
+      if (Number.isFinite(baseMs)) {
+        dueAtMs = baseMs + waitDays * 86400000;
+        isDue = curNow >= dueAtMs;
+        daysElapsed = Math.max(0, Math.floor((curNow - baseMs) / 86400000));
+        daysUntil = Math.ceil((dueAtMs - curNow) / 86400000);
+      } else {
+        isDue = true;
+      }
+    }
+    const labels = { day0: "Day 0", day1: "Day 1", day7: "Day 7", day21: "Day 21" };
+    return {
+      completedStages,
+      nextStage,
+      nextLabel: nextStage ? labels[nextStage] : "全段階完了",
+      dueAtMs,
+      isDue,
+      daysElapsed,
+      daysUntil,
+      guide: nextStage ? REVIEW_STAGE_GUIDE[nextStage] : "全ステージ完了。模試・過去問で実戦確認しましょう。"
+    };
+  }
+
+  function getDueSummary(nowMs) {
+    const curNow = nowMs || Date.now();
+    const dueJournal = (DATA.drills || []).filter((c) => isCardDue(c.id, curNow));
+    const dueCalc = (DATA.calcDrills || []).filter((c) => isCardDue(c.id, curNow));
+    const dueTheory = (DATA.theoryDrills || []).filter((c) => isCardDue(c.id, curNow));
+    const allDueCards = [
+      ...dueJournal.map((c) => ({ kind: "journal", card: c })),
+      ...dueCalc.map((c) => ({ kind: "calc", card: c })),
+      ...dueTheory.map((c) => ({ kind: "theory", card: c }))
+    ];
+    const units = (DATA.items || []).filter((it) => it.part !== "guide" && it.available);
+    const dueUnits = units
+      .map((u) => ({ doc: u, status: getUnitReviewStatus(u, curNow) }))
+      .filter((x) => x.status.nextStage && x.status.nextStage !== "day0" && x.status.isDue);
+    return {
+      dueJournal,
+      dueCalc,
+      dueTheory,
+      allDueCards,
+      dueUnits,
+      totalDue: allDueCards.length + dueUnits.length
+    };
+  }
+
+  function updateDueBadge() {
+    const badge = document.getElementById("drillDueBadge");
+    if (!badge) return;
+    const { totalDue } = getDueSummary();
+    if (totalDue > 0) {
+      badge.textContent = totalDue > 99 ? "99+" : String(totalDue);
+      badge.classList.remove("hidden");
+      badge.setAttribute("aria-label", "今日の復習 " + totalDue + "件");
+    } else {
+      badge.textContent = "";
+      badge.classList.add("hidden");
+    }
   }
 
   function escapeHtml(str) {
@@ -438,7 +719,103 @@
     if (!banner || totalCount === 0) return;
     const arr = state.checks[doc.id] || [];
     const doneCount = arr.filter(Boolean).length;
-    banner.classList.toggle("visible", doneCount >= totalCount);
+    const isDone = doneCount >= totalCount;
+    banner.classList.toggle("visible", isDone);
+    if (!isDone) return;
+    const hasDay0 = !!(state.reviews[doc.id] && state.reviews[doc.id].day0);
+    if (!hasDay0 && doc.part !== "guide") {
+      banner.innerHTML =
+        '<span>この単元の本質チェックリストを全項目クリアしました。</span>' +
+        '<button type="button" class="primary-btn banner-day0-btn" id="bannerMarkDay0Btn">Day 0 を記録して復習予約</button>';
+      const btn = document.getElementById("bannerMarkDay0Btn");
+      if (btn) {
+        btn.onclick = () => {
+          toggleDocReviewStage(doc.id, "day0", true);
+          updateMasterBanner(doc, totalCount);
+        };
+      }
+    } else {
+      banner.textContent = "この単元の本質チェックリストを全項目クリアしました。Day 1 / Day 7 復習へ進みましょう。";
+    }
+  }
+
+  function toggleDocReviewStage(docId, dayKey, forceTrue) {
+    if (!docId) return;
+    if (!state.reviews[docId]) state.reviews[docId] = {};
+    const nextVal = forceTrue ? new Date().toISOString() : (state.reviews[docId][dayKey] ? false : new Date().toISOString());
+    state.reviews[docId][dayKey] = nextVal;
+    if (nextVal) recordStudyActivity("unit");
+    saveState();
+    const tracker = document.getElementById("reviewTracker");
+    if (tracker && currentDocId === docId) {
+      tracker.querySelectorAll(".day-btn").forEach((btn) => {
+        btn.classList.toggle("done", !!state.reviews[docId][btn.dataset.day]);
+      });
+    }
+    const curDoc = DATA.items.find((it) => it.id === docId);
+    if (curDoc && currentDocId === docId) renderDocBottomReviewBar(curDoc);
+    updateDueBadge();
+    renderSidebar();
+  }
+
+  function renderDocBottomReviewBar(doc) {
+    const el = document.getElementById("docBottomReviewBar");
+    if (!el) return;
+    if (!doc || !doc.available || doc.part === "guide") {
+      el.classList.add("hidden");
+      el.innerHTML = "";
+      return;
+    }
+    const status = getUnitReviewStatus(doc);
+    const docRev = state.reviews[doc.id] || {};
+    const jCount = (DATA.drills || []).filter((c) => c.docId === doc.id).length;
+    const cCount = (DATA.calcDrills || []).filter((c) => c.docId === doc.id).length;
+    const drillTotal = jCount + cCount;
+
+    let dueLine = "";
+    if (status.nextStage === "day0") {
+      dueLine = "未記録 — 読了したら Day 0 を押して翌日（Day 1）復習を予約しましょう。";
+    } else if (!status.nextStage) {
+      dueLine = "全ステージ（Day 0〜21）完了済み。";
+    } else if (status.isDue) {
+      dueLine = status.nextLabel + " の復習期限が到来しています（経過 " + status.daysElapsed + "日）。";
+    } else {
+      const dueStr = status.dueAtMs ? getTodayKey(new Date(status.dueAtMs)) : "";
+      dueLine = "次回予定：" + status.nextLabel + "（" + dueStr + "）";
+    }
+
+    const stages = [
+      { key: "day0", label: "Day 0" },
+      { key: "day1", label: "Day 1" },
+      { key: "day7", label: "Day 7" },
+      { key: "day21", label: "Day 21" }
+    ];
+
+    el.classList.remove("hidden");
+    el.innerHTML =
+      '<div class="doc-bottom-head">' +
+      '<div><div class="doc-bottom-title">この単元の分散復習＆演習</div>' +
+      '<div class="doc-bottom-sub">' + escapeHtml(dueLine) + "</div>" +
+      '<div class="doc-bottom-guide">' + escapeHtml(status.guide) + "</div></div>" +
+      (drillTotal > 0
+        ? '<button type="button" class="primary-btn" id="bottomUnitDojoBtn">この単元の道場（' + drillTotal + "問）を解く</button>"
+        : "") +
+      "</div>" +
+      '<div class="doc-bottom-days">' +
+      stages.map((st) => '<button type="button" class="day-btn' + (docRev[st.key] ? " done" : "") + '" data-bottom-day="' + st.key + '">' + st.label + "</button>").join("") +
+      "</div>";
+
+    el.querySelectorAll("[data-bottom-day]").forEach((btn) => {
+      btn.onclick = () => toggleDocReviewStage(doc.id, btn.dataset.bottomDay, false);
+    });
+    const dojoBtn = document.getElementById("bottomUnitDojoBtn");
+    if (dojoBtn) {
+      dojoBtn.onclick = () => {
+        if (window.BokiStudioTools && typeof window.BokiStudioTools.openUnitDojo === "function") {
+          window.BokiStudioTools.openUnitDojo(doc.id);
+        }
+      };
+    }
   }
 
   function isDocMastered(doc) {
@@ -497,7 +874,21 @@
     const nav = document.getElementById("sidebarNav");
     const q = document.getElementById("searchInput").value.trim().toLowerCase();
     const onlyAvail = document.getElementById("onlyAvailableChk").checked;
+    const onlyDueChk = document.getElementById("onlyDueReviewChk");
+    const onlyDue = !!(onlyDueChk && onlyDueChk.checked);
+    const nowMs = Date.now();
     nav.innerHTML = "";
+
+    const unitWeakCardCount = (docId) => {
+      let n = 0;
+      (DATA.drills || []).forEach((c) => {
+        if (c.docId === docId && (isCardDue(c.id, nowMs) || isCardLeech(c.id))) n++;
+      });
+      (DATA.calcDrills || []).forEach((c) => {
+        if (c.docId === docId && (isCardDue(c.id, nowMs) || isCardLeech(c.id))) n++;
+      });
+      return n;
+    };
 
     const groups = navMode === "part" ? DATA.parts : DATA.lines;
     groups.forEach((g) => {
@@ -505,6 +896,12 @@
         const inGroup = navMode === "part" ? it.part === g.id : it.line.includes(g.id);
         if (!inGroup) return false;
         if (onlyAvail && !it.available) return false;
+        if (onlyDue) {
+          const st = it.part !== "guide" && it.available ? getUnitReviewStatus(it, nowMs) : null;
+          const unitDue = !!(st && st.nextStage && st.nextStage !== "day0" && st.isDue);
+          const cardDue = unitWeakCardCount(it.id) > 0;
+          if (!unitDue && !cardDue) return false;
+        }
         if (q) {
           const hay = (it.id + " " + it.title + " " + (it.markdown || "")).toLowerCase();
           if (!hay.includes(q)) return false;
@@ -524,6 +921,12 @@
         const btn = document.createElement("button");
         btn.className = "nav-item" + (it.id === currentDocId ? " active" : "") + (!it.available ? " unavailable" : "");
         let badges = "";
+        const st = it.part !== "guide" && it.available ? getUnitReviewStatus(it, nowMs) : null;
+        if (st && st.nextStage && st.nextStage !== "day0" && st.isDue) {
+          badges += '<span class="review-dot is-due" title="単元復習の期限到来"></span>';
+        } else if (unitWeakCardCount(it.id) > 0) {
+          badges += '<span class="review-dot is-weak" title="道場に復習・要強化カードあり"></span>';
+        }
         if (it.is2027New) badges += '<span class="badge-2027">2027</span>';
         if (isDocMastered(it)) badges += '<span class="badge-done">✓</span>';
         else if (!it.available) badges += '<span class="badge-todo">予定</span>';
@@ -717,6 +1120,18 @@
       "L2C-12": {
         title: "連結会計：支配獲得日と持分変動（傘の中 vs ライン越え）",
         svg: '<svg viewBox="0 0 680 160" class="concept-svg" role="img" aria-label="連結会計構造図"><line x1="40" y1="88" x2="640" y2="88" stroke="var(--border-strong)" stroke-width="2"/><circle cx="130" cy="88" r="6" fill="var(--text)"/><text x="130" y="56" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--text)">支配獲得日</text><text x="130" y="118" text-anchor="middle" font-size="11.5" fill="var(--text-muted)">全面時価評価＋のれん</text><circle cx="340" cy="88" r="6" fill="var(--emerald)"/><text x="340" y="56" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--emerald)">連結決算（毎期）</text><text x="340" y="118" text-anchor="middle" font-size="11.5" fill="var(--text-muted)">のれん償却・成果連結・NCI按分</text><circle cx="550" cy="88" r="6" fill="var(--amber)"/><text x="550" y="56" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--amber)">追加取得・一部売却</text><text x="550" y="118" text-anchor="middle" font-size="11.5" fill="var(--text-muted)">支配継続＝資本剰余金で調整</text></svg>'
+      },
+      "PR-01": {
+        title: "月次決算クリティカルパス（日次POS消込 → 仮締 → 本締）",
+        svg: '<svg viewBox="0 0 680 155" class="concept-svg" role="img" aria-label="月次決算フロー図"><rect x="14" y="26" width="142" height="102" rx="4" fill="var(--surface)" stroke="var(--border-strong)"/><text x="85" y="54" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--text)">第1〜2営業日</text><text x="85" y="80" text-anchor="middle" font-size="11.5" fill="var(--text-muted)">銀行API・POS・PSP</text><text x="85" y="102" text-anchor="middle" font-size="11.5" fill="var(--text-muted)">明細突合・消込</text><rect x="182" y="26" width="146" height="102" rx="4" fill="var(--surface-alt)" stroke="var(--border-strong)"/><text x="255" y="54" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--text)">第3〜4営業日</text><text x="255" y="80" text-anchor="middle" font-size="11.5" fill="var(--text-muted)">未着請求の概算計上</text><text x="255" y="102" text-anchor="middle" font-size="11.5" fill="var(--text-muted)">給与・償却・棚卸確定</text><rect x="354" y="26" width="146" height="102" rx="4" fill="var(--amber-soft)" stroke="var(--amber)"/><text x="427" y="54" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--amber)">第5〜6営業日</text><text x="427" y="80" text-anchor="middle" font-size="11.5" fill="var(--text)">仮締・粗利率分析</text><text x="427" y="102" text-anchor="middle" font-size="11.5" fill="var(--text-muted)">異常値調査・承認</text><rect x="526" y="26" width="140" height="102" rx="4" fill="var(--emerald-soft)" stroke="var(--emerald)"/><text x="596" y="54" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--emerald)">第7〜10営業日</text><text x="596" y="80" text-anchor="middle" font-size="11.5" fill="var(--text)">本締・経営会議</text><text x="596" y="102" text-anchor="middle" font-size="11.5" fill="var(--text-muted)">資金繰り表・予実報告</text><path d="M156 77 L182 77 M328 77 L354 77 M500 77 L526 77" stroke="var(--text-muted)" stroke-width="1.5" fill="none"/></svg>'
+      },
+      "PR-04": {
+        title: "ROE デュポン3要素分解と CCC 資金循環構造",
+        svg: '<svg viewBox="0 0 680 165" class="concept-svg" role="img" aria-label="ROEデュポン分解図"><rect x="16" y="22" width="190" height="118" rx="4" fill="var(--emerald-soft)" stroke="var(--emerald)"/><text x="111" y="50" text-anchor="middle" font-size="13" font-weight="700" fill="var(--emerald)">① 売上高純利益率</text><text x="111" y="78" text-anchor="middle" font-size="12" fill="var(--text)">当期純利益 ÷ 売上高</text><text x="111" y="108" text-anchor="middle" font-size="11.5" fill="var(--text-muted)">価格決定力・原価管理</text><text x="224" y="86" text-anchor="middle" font-size="18" font-weight="700" fill="var(--text)">×</text><rect x="242" y="22" width="196" height="118" rx="4" fill="var(--surface-alt)" stroke="var(--text)"/><text x="340" y="50" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text)">② 総資産回転率</text><text x="340" y="78" text-anchor="middle" font-size="12" fill="var(--text)">売上高 ÷ 総資産</text><text x="340" y="108" text-anchor="middle" font-size="11.5" fill="var(--text-muted)">CCC圧縮・在庫/売掛回転</text><text x="456" y="86" text-anchor="middle" font-size="18" font-weight="700" fill="var(--text)">×</text><rect x="474" y="22" width="190" height="118" rx="4" fill="var(--amber-soft)" stroke="var(--amber)"/><text x="569" y="50" text-anchor="middle" font-size="13" font-weight="700" fill="var(--amber)">③ 財務レバレッジ</text><text x="569" y="78" text-anchor="middle" font-size="12" fill="var(--text)">総資産 ÷ 自己資本</text><text x="569" y="108" text-anchor="middle" font-size="11.5" fill="var(--text-muted)">借入余力と安全性(D/E)</text></svg>'
+      },
+      "PR-06": {
+        title: "日本の会計3法トライアングル体制と 2027年改定接続",
+        svg: '<svg viewBox="0 0 680 165" class="concept-svg" role="img" aria-label="3法トライアングル図"><rect x="200" y="14" width="280" height="54" rx="4" fill="var(--surface-alt)" stroke="var(--text)" stroke-width="1.2"/><text x="340" y="38" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text)">金融商品取引法（投資家保護）</text><text x="340" y="56" text-anchor="middle" font-size="11" fill="var(--text-muted)">連結F/S・IFRS統合(29/34号)・J-SOX</text><rect x="20" y="96" width="280" height="54" rx="4" fill="var(--emerald-soft)" stroke="var(--emerald)"/><text x="160" y="120" text-anchor="middle" font-size="13" font-weight="700" fill="var(--emerald)">会社法（債権者保護）</text><text x="160" y="138" text-anchor="middle" font-size="11" fill="var(--text-muted)">単体計算書類・分配可能額規制</text><rect x="380" y="96" width="280" height="54" rx="4" fill="var(--amber-soft)" stroke="var(--amber)"/><text x="520" y="120" text-anchor="middle" font-size="13" font-weight="700" fill="var(--amber)">法人税法（公平な徴税）</text><text x="520" y="138" text-anchor="middle" font-size="11" fill="var(--text-muted)">確定決算主義・別表四 → 税効果会計</text><path d="M255 68 L185 96 M425 68 L495 96 M300 123 L380 123" stroke="var(--border-strong)" stroke-width="1.75" fill="none"/></svg>'
       }
     };
     svgMap["L3-01"] = svgMap["G-03"];
@@ -730,6 +1145,7 @@
     const h1 = bodyEl.querySelector("h1");
     const box = document.createElement("div");
     box.className = "concept-svg-card";
+    box.tabIndex = 0;
     box.innerHTML = '<div class="concept-svg-title">' + escapeHtml(item.title) + "</div>" + item.svg;
     if (h1 && h1.nextSibling) bodyEl.insertBefore(box, h1.nextSibling);
     else bodyEl.prepend(box);
@@ -822,9 +1238,11 @@
     // Scratchpad load
     document.getElementById("scratchTextarea").value = state.notes[doc.id] || "";
 
+    renderDocBottomReviewBar(doc);
     renderTOC();
     renderSidebar();
     updateProgress();
+    updateDueBadge();
     const mainEl = document.getElementById("mainContent");
     if (mainEl) mainEl.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -975,6 +1393,8 @@
 
     document.getElementById("searchInput").addEventListener("input", renderSidebar);
     document.getElementById("onlyAvailableChk").addEventListener("change", renderSidebar);
+    const onlyDueChk = document.getElementById("onlyDueReviewChk");
+    if (onlyDueChk) onlyDueChk.addEventListener("change", renderSidebar);
 
     focusBtn.onclick = (e) => {
       state.focusCore = !state.focusCore;
@@ -1019,13 +1439,7 @@
     });
 
     document.getElementById("reviewTracker").querySelectorAll(".day-btn").forEach((btn) => {
-      btn.onclick = () => {
-        if (!state.reviews[currentDocId]) state.reviews[currentDocId] = {};
-        const key = btn.dataset.day;
-        state.reviews[currentDocId][key] = state.reviews[currentDocId][key] ? false : new Date().toISOString();
-        btn.classList.toggle("done", !!state.reviews[currentDocId][key]);
-        saveState();
-      };
+      btn.onclick = () => toggleDocReviewStage(currentDocId, btn.dataset.day, false);
     });
 
     document.querySelectorAll(".mode-btn").forEach((btn) => {
@@ -1098,8 +1512,10 @@
       reader.onload = () => {
         try {
           const imported = JSON.parse(reader.result);
-          Object.assign(state, imported);
+          Object.assign(state, defaultStateShape(), imported);
+          migrateSrsState(state);
           saveState();
+          updateDueBadge();
           openDoc(currentDocId, false);
         } catch (err) {
           alert("JSONの読み込みに失敗しました。");
@@ -1162,8 +1578,10 @@
           const bytes = new Uint8Array(bin.length);
           for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
           const parsed = JSON.parse(new TextDecoder().decode(bytes));
-          Object.assign(state, parsed);
+          Object.assign(state, defaultStateShape(), parsed);
+          migrateSrsState(state);
           saveState();
+          updateDueBadge();
           openDoc(currentDocId, false);
           if (msg) msg.textContent = "✓ 学習記録を復元しました！";
         } catch (err) {
@@ -1184,6 +1602,7 @@
 
     const initialHash = window.location.hash.replace(/^#/, "");
     openDoc(initialHash || state.lastDocId || "G-00", false);
+    updateDueBadge();
 
     window.addEventListener("scroll", updateReadingProgress, { passive: true });
     window.addEventListener("resize", markScrollableContainers, { passive: true });
@@ -1198,7 +1617,23 @@
       updateProgress,
       markScrollableContainers,
       escapeHtml,
-      getStudioMode: () => studioMode
+      getStudioMode: () => studioMode,
+      MISTAKE_REASONS,
+      REVIEW_STAGE_GUIDE,
+      migrateSrsState,
+      getTodayKey,
+      recordStudyActivity,
+      getStreakDays,
+      previewSm2Interval,
+      recordSrsReview,
+      isCardDue,
+      isCardLeech,
+      getUnitReviewStatus,
+      getDueSummary,
+      updateDueBadge,
+      toggleDocReviewStage,
+      renderDocBottomReviewBar,
+      renderSidebar
     };
   }
 
