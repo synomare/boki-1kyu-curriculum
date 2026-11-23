@@ -578,7 +578,13 @@ $tJsonList = New-Object System.Collections.Generic.List[string]
 foreach ($th in $theoryList) { $tJsonList.Add(($th | ConvertTo-Json -Depth 4 -Compress)) }
 $theoryJoined = "[" + ($tJsonList -join ",") + "]"
 
-$jsPayload = "window.CURRICULUM_DATA = {`"generatedAt`":`"$generatedAt`",`"fullPdfPath`":`"../dist/pdf/boki-1kyu-curriculum.pdf`",`"fullPdfAvailable`":$fullPdfAvail,`"parts`":$partsJson,`"lines`":$linesJson,`"subjects`":$subjectsJson,`"items`":$itemsJoined,`"drills`":$drillsJoined,`"calcDrills`":$calcJson,`"theoryDrills`":$theoryJoined};"
+$pastPath = Join-Path $PSScriptRoot "past_exams.json"
+$pastExamsJson = if (Test-Path $pastPath) {
+    $pastObj = ([System.IO.File]::ReadAllText($pastPath, [System.Text.Encoding]::UTF8)) | ConvertFrom-Json
+    $pastObj | ConvertTo-Json -Depth 10 -Compress
+} else { "{}" }
+
+$jsPayload = "window.CURRICULUM_DATA = {`"generatedAt`":`"$generatedAt`",`"fullPdfPath`":`"../dist/pdf/boki-1kyu-curriculum.pdf`",`"fullPdfAvailable`":$fullPdfAvail,`"parts`":$partsJson,`"lines`":$linesJson,`"subjects`":$subjectsJson,`"items`":$itemsJoined,`"drills`":$drillsJoined,`"calcDrills`":$calcJson,`"theoryDrills`":$theoryJoined,`"pastExams`":$pastExamsJson};"
 
 $outPath = Join-Path $viewerDir "curriculum_data.js"
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)

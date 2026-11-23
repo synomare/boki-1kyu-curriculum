@@ -15,8 +15,9 @@
    * 1. JOURNAL DRILL DOJO v2 (⚔️ 仕訳道場：入力自動採点 & 高速フラッシュ)
    * ========================================================================= */
   const drillState = {
-    dojoTab: "journal", // "journal" | "calc" | "theory" | "cbt"
+    dojoTab: "journal", // "journal" | "calc" | "theory" | "cbt" | "past"
     mode: "input", // "input" | "flash"
+    mobileFiltersOpen: false,
     part: "all",
     queueMode: "all", // "all" | "unmastered" | "weak"
     docFilter: "",
@@ -347,7 +348,8 @@
       { id: "journal", label: "仕訳 (" + jCnt + ")" },
       { id: "calc", label: "工簿数値 (" + cCnt + ")" },
       { id: "theory", label: "理論穴埋め (" + tCnt + ")" },
-      { id: "cbt", label: "CBT模試" }
+      { id: "cbt", label: "CBT模試" },
+      { id: "past", label: "公式過去問" }
     ];
     let h = '<div class="sim-tabs dojo-main-tabs">';
     tabs.forEach((t) => {
@@ -365,6 +367,10 @@
         renderDrillView();
       };
     });
+    const activeTab = root.querySelector(".dojo-tab-btn.active");
+    if (activeTab && typeof activeTab.scrollIntoView === "function") {
+      activeTab.scrollIntoView({ inline: "center", block: "nearest" });
+    }
   }
 
   function renderDrillView() {
@@ -381,6 +387,10 @@
     }
     if (drillState.dojoTab === "cbt") {
       renderCbtDojo(root);
+      return;
+    }
+    if (drillState.dojoTab === "past") {
+      renderPastExamArchive(root);
       return;
     }
 
@@ -412,8 +422,19 @@
       docMap.get(c.docId).cnt++;
     });
 
+    const activeFilterCount = (drillState.part !== "all" ? 1 : 0) + (drillState.docFilter ? 1 : 0) + (drillState.queueMode !== "all" ? 1 : 0);
+
     let html = renderDojoTabBar() +
-      '<div class="studio-header">' +
+      '<div class="mobile-drill-bar mobile-only">' +
+      '<div class="mobile-seg-group">' +
+      '<button type="button" class="mobile-seg-btn drill-submode-btn' + (drillState.mode === "input" ? " active" : "") + '" data-dmode="input">入力</button>' +
+      '<button type="button" class="mobile-seg-btn drill-submode-btn' + (drillState.mode === "flash" ? " active" : "") + '" data-dmode="flash">カード</button>' +
+      '</div>' +
+      '<div class="mobile-drill-actions">' +
+      '<button type="button" class="mask-btn' + (drillState.mobileFiltersOpen ? " active" : "") + '" id="drillMobileFilterBtn" aria-expanded="' + (drillState.mobileFiltersOpen ? "true" : "false") + '">絞込' + (activeFilterCount ? " (" + activeFilterCount + ")" : "") + "</button>" +
+      '<button type="button" class="primary-btn" id="drillMobileBlitzBtn">10問</button>' +
+      "</div></div>" +
+      '<div class="studio-header drill-view-header">' +
       "<div><h2>仕訳道場</h2>" +
       '<p class="studio-sub">全単元・模試の問題文と連動した <strong>' + allCards.length + '問</strong>。入力採点とフラッシュカードを切り替えられます。</p></div>' +
       '<div class="drill-stats-pills">' +
@@ -427,6 +448,7 @@
     html += '<button type="button" class="sim-tab-btn drill-submode-btn' + (drillState.mode === "flash" ? " active" : "") + '" data-dmode="flash">フラッシュカード</button>';
     html += "</div>";
 
+    html += '<div id="drillFilterPanel" class="drill-filter-panel' + (drillState.mobileFiltersOpen ? " open" : "") + '">';
     html += '<div class="drill-filters-grid">';
     html += '<select id="drillPartSelect" class="studio-select" aria-label="出題範囲を選択">';
     partOptions.forEach((op) => {
@@ -450,7 +472,7 @@
     html += '<div class="drill-quick-actions">';
     html += '<button type="button" class="mask-btn" id="drillShuffleBtn">シャッフル</button>';
     html += '<button type="button" class="primary-btn" id="drillBlitzBtn">10問アタック</button>';
-    html += "</div></div></div>";
+    html += "</div></div></div></div>";
 
     if (drillState.blitzActive) {
       const dispNum = Math.min(drillState.blitzCount + 1, drillState.blitzTotal);
@@ -710,6 +732,18 @@
     if (sBtn) sBtn.onclick = () => { stopBlitz(); rebuildDeck(true); renderDrillView(); };
     const bBtn = document.getElementById("drillBlitzBtn");
     if (bBtn) bBtn.onclick = startBlitz;
+    const mbBtn = document.getElementById("drillMobileBlitzBtn");
+    if (mbBtn) mbBtn.onclick = startBlitz;
+    const mfBtn = document.getElementById("drillMobileFilterBtn");
+    if (mfBtn) {
+      mfBtn.onclick = () => {
+        drillState.mobileFiltersOpen = !drillState.mobileFiltersOpen;
+        const panel = document.getElementById("drillFilterPanel");
+        if (panel) panel.classList.toggle("open", drillState.mobileFiltersOpen);
+        mfBtn.classList.toggle("active", drillState.mobileFiltersOpen);
+        mfBtn.setAttribute("aria-expanded", drillState.mobileFiltersOpen ? "true" : "false");
+      };
+    }
     const stBtn = document.getElementById("blitzStopBtn");
     if (stBtn) stBtn.onclick = () => { stopBlitz(); rebuildDeck(false); renderDrillView(); };
   }
@@ -1807,12 +1841,14 @@
           (isPinned ? "★" : "☆") +
           "</button></td>";
         r.cells.forEach((cell, cIdx) => {
+          const colLabel = tbl.headers[cIdx] || "";
+          const cellRoleCls = cIdx < visibleColLimit ? "cheat-key-cell" : "cheat-val-cell";
           const isTarget = cIdx >= visibleColLimit && cell.trim() !== "" && cell.trim() !== "—";
           if (isTarget && cheatState.redSheet) {
             const revCls = cheatState.tempRevealAll ? " revealed" : "";
-            html += '<td><span class="cheat-mask' + revCls + '" tabindex="0" role="button" title="クリックで開示／再隠蔽">' + formatInlineCheat(cell) + "</span></td>";
+            html += '<td class="' + cellRoleCls + '" data-col-label="' + escapeHtml(colLabel) + '"><span class="cheat-mask' + revCls + '" tabindex="0" role="button" title="クリックで開示／再隠蔽">' + formatInlineCheat(cell) + "</span></td>";
           } else {
-            html += "<td>" + formatInlineCheat(cell) + "</td>";
+            html += '<td class="' + cellRoleCls + '" data-col-label="' + escapeHtml(colLabel) + '">' + formatInlineCheat(cell) + "</td>";
           }
         });
         html += "</tr>";
@@ -1924,6 +1960,361 @@
     }
 
     renderCheatResults();
+  }
+
+  const pastExamState = {
+    filter: "l1",
+    query: ""
+  };
+
+  function buildPastPassRateChartSvg(statsL1) {
+    const rows = (statsL1 || [])
+      .filter((r) => Array.isArray(r) && r.length >= 5)
+      .map((r) => ({
+        examNo: parseInt(String(r[0]), 10),
+        rate: parseFloat(String(r[4]).replace(/[％%]/g, ""))
+      }))
+      .filter((r) => !Number.isNaN(r.examNo) && !Number.isNaN(r.rate))
+      .sort((a, b) => a.examNo - b.examNo);
+    if (!rows.length) return "";
+
+    const W = 640;
+    const H = 132;
+    const padL = 34;
+    const padR = 16;
+    const padT = 18;
+    const padB = 26;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const maxRate = Math.max(24, Math.ceil(Math.max(...rows.map((r) => r.rate)) / 5) * 5);
+
+    const pts = rows.map((r, idx) => {
+      const x = rows.length === 1 ? padL + innerW / 2 : padL + (idx / (rows.length - 1)) * innerW;
+      const y = padT + innerH - (r.rate / maxRate) * innerH;
+      return { examNo: r.examNo, rate: r.rate, x, y };
+    });
+
+    const y10 = padT + innerH - (10 / maxRate) * innerH;
+    const polyPoints = pts.map((p) => p.x.toFixed(1) + "," + p.y.toFixed(1)).join(" ");
+
+    let svg = '<svg class="past-chart-svg" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="日商簿記1級 合格率推移">';
+    svg += '<line x1="' + padL + '" y1="' + y10.toFixed(1) + '" x2="' + (W - padR) + '" y2="' + y10.toFixed(1) + '" stroke="var(--border-strong)" stroke-dasharray="4 4" stroke-width="1" />';
+    svg += '<text x="4" y="' + (y10 + 3).toFixed(1) + '" font-size="10" fill="var(--text-muted)">10%</text>';
+    svg += '<polyline fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" points="' + polyPoints + '" />';
+
+    pts.forEach((p, idx) => {
+      const showLabel = idx === 0 || idx === pts.length - 1 || idx % 2 === 0;
+      svg += '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="3.4" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"><title>第' + p.examNo + "回: " + p.rate.toFixed(1) + "%</title></circle>";
+      if (showLabel) {
+        svg += '<text x="' + p.x.toFixed(1) + '" y="' + (H - 7) + '" text-anchor="middle" font-size="10" fill="var(--text-muted)">' + p.examNo + "</text>";
+      }
+      if (idx === 0 || idx === pts.length - 1 || p.rate >= 15 || p.rate <= 8.5) {
+        svg += '<text x="' + p.x.toFixed(1) + '" y="' + Math.max(12, p.y - 7).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="600" fill="var(--text)">' + p.rate.toFixed(1) + "%</text>";
+      }
+    });
+
+    svg += "</svg>";
+    return svg;
+  }
+
+  function renderPastExamArchive(root, preserveShell) {
+    const pe = DATA.pastExams || {};
+    const l1List = pe.level1Exams || [];
+    const l2List = pe.level2Samples || [];
+    const l3List = pe.level3Samples || [];
+    const doneMap = state.pastExamDone || {};
+    const doneCount = Object.keys(doneMap).filter((k) => doneMap[k]).length;
+
+    const subjectDefs = [
+      { key: "commercial", label: "商業簿記" },
+      { key: "accounting", label: "会計学" },
+      { key: "industrial", label: "工業簿記" },
+      { key: "costing", label: "原価計算" }
+    ];
+
+    function renderPastExamBody() {
+      const bodyEl = document.getElementById("pastExamBody");
+      const doneKpiEl = document.getElementById("pastDoneKpiVal");
+      const doneSumEl = document.getElementById("pastDoneSummaryVal");
+      const curDone = Object.keys(state.pastExamDone || {}).filter((k) => state.pastExamDone[k]).length;
+      if (doneKpiEl) doneKpiEl.textContent = curDone + "件";
+      if (doneSumEl) doneSumEl.textContent = curDone + "件";
+      if (!bodyEl) return;
+
+      const q = (pastExamState.query || "").trim().toLowerCase();
+      const filter = pastExamState.filter;
+      const curDoneMap = state.pastExamDone || {};
+      let html = "";
+
+      if (filter === "l1") {
+        const matched = l1List.filter((ex) => {
+          if (!q) return true;
+          const hay = [
+            "第" + ex.examNo + "回",
+            String(ex.examNo),
+            ex.date || "",
+            ex.examinerTakeaway || "",
+            ex.note2027 || "",
+            ...subjectDefs.flatMap((sd) => {
+              const s = (ex.subjects && ex.subjects[sd.key]) || {};
+              return [sd.label, s.summary || "", ...(s.topics || []), ...(s.unitIds || [])];
+            })
+          ].join(" ").toLowerCase();
+          return hay.includes(q);
+        });
+
+        if (!matched.length) {
+          html += '<div class="past-empty">一致する1級本試験が見つかりません。検索語を変更してください。</div>';
+        } else {
+          html += '<div class="past-list">';
+          matched.forEach((ex) => {
+            const doneKey = "L1-" + ex.examNo;
+            const isDone = !!curDoneMap[doneKey];
+            const rateLabel = ex.passRate && ex.passRate !== "集計中" ? "合格率 " + ex.passRate : "合格率 集計中";
+            html += '<article class="past-card">';
+            html += '<div class="past-card-head"><div class="past-card-meta">';
+            html += '<span class="past-exam-no">第' + escapeHtml(String(ex.examNo)) + "回</span>";
+            html += '<span class="past-exam-date">' + escapeHtml(ex.date || "") + "</span>";
+            html += '<span class="past-badge">' + escapeHtml(rateLabel) + "</span>";
+            if (typeof ex.examinees === "number") {
+              html += '<span class="past-badge">' + escapeHtml(ex.examinees.toLocaleString() + "名受験") + "</span>";
+            }
+            html += "</div>";
+            html += '<button type="button" class="past-done-btn ' + (isDone ? "is-done" : "") + '" data-done-key="' + escapeHtml(doneKey) + '">' + (isDone ? "演習済 ✓" : "演習済にする") + "</button>";
+            html += "</div>";
+
+            html += '<div class="past-links-row past-links-top">';
+            if (ex.comAccPdfUrl) html += '<a class="past-ext-link" href="' + escapeHtml(ex.comAccPdfUrl) + '" target="_blank" rel="noopener noreferrer">商簿・会計 PDF</a>';
+            if (ex.indCostPdfUrl) html += '<a class="past-ext-link" href="' + escapeHtml(ex.indCostPdfUrl) + '" target="_blank" rel="noopener noreferrer">工簿・原計 PDF</a>';
+            if (ex.reviewPdfUrl) html += '<a class="past-ext-link" href="' + escapeHtml(ex.reviewPdfUrl) + '" target="_blank" rel="noopener noreferrer">公式 講評PDF</a>';
+            if (ex.officialPageUrl) html += '<a class="past-ext-link" href="' + escapeHtml(ex.officialPageUrl) + '" target="_blank" rel="noopener noreferrer">公式ページ</a>';
+            html += "</div>";
+
+            html += '<div class="past-subjects-grid">';
+            subjectDefs.forEach((sd) => {
+              const sub = (ex.subjects && ex.subjects[sd.key]) || {};
+              html += '<div class="past-subject-cell">';
+              html += '<div class="past-subject-name">' + escapeHtml(sd.label) + "</div>";
+              if (sub.summary) {
+                html += '<div class="past-subject-summary">' + escapeHtml(sub.summary) + "</div>";
+              }
+              if (sub.topics && sub.topics.length) {
+                html += '<div class="past-topics-line">' + sub.topics.map((t) => escapeHtml(t)).join(" · ") + "</div>";
+              }
+              if (sub.unitIds && sub.unitIds.length) {
+                html += '<div class="past-units-row">' + sub.unitIds.map((uid) => '<button type="button" class="past-unit-btn" data-jump-doc="' + escapeHtml(uid) + '">' + escapeHtml(uid) + " を開く</button>").join("") + "</div>";
+              }
+              html += "</div>";
+            });
+            html += "</div>";
+
+            if (ex.examinerTakeaway) {
+              html += '<div class="past-takeaway"><strong>公式講評要点:</strong> ' + escapeHtml(ex.examinerTakeaway) + "</div>";
+            }
+            if (ex.note2027) {
+              html += '<div class="past-note-2027"><strong>2027年改定メモ:</strong> ' + escapeHtml(ex.note2027) + "</div>";
+            }
+            html += "</article>";
+          });
+          html += "</div>";
+        }
+      } else if (filter === "l2" || filter === "l3") {
+        const list = filter === "l2" ? l2List : l3List;
+        const matched = list.filter((sample) => {
+          if (!q) return true;
+          const hay = [
+            sample.title || "",
+            sample.released || "",
+            ...(sample.parts || []).flatMap((p) => [p.label || "", p.note2027 || "", ...(p.topics || []), ...(p.unitIds || [])])
+          ].join(" ").toLowerCase();
+          return hay.includes(q);
+        });
+
+        if (!matched.length) {
+          html += '<div class="past-empty">一致するサンプル問題が見つかりません。</div>';
+        } else {
+          html += '<div class="past-list">';
+          matched.forEach((sample) => {
+            const isDone = !!curDoneMap[sample.id];
+            html += '<article class="past-card">';
+            html += '<div class="past-card-head"><div class="past-card-meta">';
+            html += '<span class="past-exam-no">' + escapeHtml(sample.title) + "</span>";
+            html += '<span class="past-exam-date">' + escapeHtml(sample.released || "") + "</span>";
+            html += "</div>";
+            html += '<button type="button" class="past-done-btn ' + (isDone ? "is-done" : "") + '" data-done-key="' + escapeHtml(sample.id) + '">' + (isDone ? "演習済 ✓" : "演習済にする") + "</button>";
+            html += "</div>";
+
+            html += '<div class="past-sample-parts">';
+            (sample.parts || []).forEach((p) => {
+              html += '<div class="past-sample-part">';
+              html += '<div class="past-sample-part-head">';
+              html += '<span class="past-sample-part-label">' + escapeHtml(p.label) + "</span>";
+              html += '<div class="past-links-row">';
+              if (p.questionPdfUrl) html += '<a class="past-ext-link" href="' + escapeHtml(p.questionPdfUrl) + '" target="_blank" rel="noopener noreferrer">問題 PDF</a>';
+              if (p.answerPdfUrl) html += '<a class="past-ext-link" href="' + escapeHtml(p.answerPdfUrl) + '" target="_blank" rel="noopener noreferrer">答案 PDF</a>';
+              html += "</div></div>";
+              if (p.topics && p.topics.length) {
+                html += '<div class="past-topics-line">' + p.topics.map((t) => escapeHtml(t)).join(" · ") + "</div>";
+              }
+              if (p.unitIds && p.unitIds.length) {
+                html += '<div class="past-units-row">' + p.unitIds.map((uid) => '<button type="button" class="past-unit-btn" data-jump-doc="' + escapeHtml(uid) + '">' + escapeHtml(uid) + " を開く</button>").join("") + "</div>";
+              }
+              if (p.note2027) {
+                html += '<div class="past-note-2027"><strong>2027年改定メモ:</strong> ' + escapeHtml(p.note2027) + "</div>";
+              }
+              html += "</div>";
+            });
+            html += "</div></article>";
+          });
+          html += "</div>";
+        }
+      } else {
+        const docs2027 = pe.official2027Docs || [];
+        const hubs = pe.officialHubs || [];
+        const statsL1 = (pe.stats && pe.stats.level1) || [];
+        const statsL2Net = (pe.stats && pe.stats.level2Net) || [];
+        const statsL3Net = (pe.stats && pe.stats.level3Net) || [];
+
+        html += '<div class="past-list">';
+        html += '<section class="past-card"><h3 class="past-section-title">2027年4月 出題区分改定・公式公開ハブ</h3><div class="past-res-grid">';
+        html += '<div class="past-res-list">';
+        docs2027.forEach((d) => {
+          html += '<a class="past-res-item" href="' + escapeHtml(d.url) + '" target="_blank" rel="noopener noreferrer"><span class="past-res-item-title">' + escapeHtml(d.title) + '</span><span class="past-res-item-desc">日本商工会議所 公式PDF</span></a>';
+        });
+        html += '</div><div class="past-res-list">';
+        hubs.forEach((h) => {
+          html += '<a class="past-res-item" href="' + escapeHtml(h.url) + '" target="_blank" rel="noopener noreferrer"><span class="past-res-item-title">' + escapeHtml(h.title) + '</span><span class="past-res-item-desc">' + escapeHtml(h.desc || "") + "</span></a>";
+        });
+        html += "</div></div></section>";
+
+        if (statsL1.length) {
+          html += '<section class="past-card"><h3 class="past-section-title">1級 統一試験 受験者数・合格率公式統計</h3>';
+          html += '<div class="table-wrap" tabindex="0"><table><thead><tr><th>回</th><th>申込者数</th><th>実受験者数</th><th>合格者数</th><th>合格率</th></tr></thead><tbody>';
+          statsL1.forEach((r) => {
+            html += "<tr><td>" + escapeHtml(String(r[0]).replace(/^(\d+)/, "第$1回")) + "</td><td>" + escapeHtml(String(r[1])) + "</td><td>" + escapeHtml(String(r[2])) + "</td><td>" + escapeHtml(String(r[3])) + "</td><td>" + escapeHtml(String(r[4]).replace("％", "%")) + "</td></tr>";
+          });
+          html += "</tbody></table></div></section>";
+        }
+
+        if (statsL2Net.length || statsL3Net.length) {
+          html += '<section class="past-card"><h3 class="past-section-title">2級・3級 ネット試験（CBT）公式推移</h3>';
+          html += '<div class="past-res-grid">';
+          if (statsL2Net.length) {
+            html += '<div class="table-wrap" tabindex="0"><table><thead><tr><th>2級 CBT期間</th><th>受験者</th><th>合格者</th><th>合格率</th></tr></thead><tbody>';
+            statsL2Net.forEach((r) => {
+              html += "<tr><td>" + escapeHtml(String(r[0])) + "</td><td>" + escapeHtml(String(r[1])) + "</td><td>" + escapeHtml(String(r[2])) + "</td><td>" + escapeHtml(String(r[3]).replace("％", "%")) + "</td></tr>";
+            });
+            html += "</tbody></table></div>";
+          }
+          if (statsL3Net.length) {
+            html += '<div class="table-wrap" tabindex="0"><table><thead><tr><th>3級 CBT期間</th><th>受験者</th><th>合格者</th><th>合格率</th></tr></thead><tbody>';
+            statsL3Net.forEach((r) => {
+              html += "<tr><td>" + escapeHtml(String(r[0])) + "</td><td>" + escapeHtml(String(r[1])) + "</td><td>" + escapeHtml(String(r[2])) + "</td><td>" + escapeHtml(String(r[3]).replace("％", "%")) + "</td></tr>";
+            });
+            html += "</tbody></table></div>";
+          }
+          html += "</div></section>";
+        }
+
+        if (pe.copyrightNotice) {
+          html += '<section class="past-card"><p class="past-copyright">' + escapeHtml(pe.copyrightNotice) + "</p></section>";
+        }
+        html += "</div>";
+      }
+
+      bodyEl.innerHTML = html;
+
+      bodyEl.querySelectorAll("[data-done-key]").forEach((btn) => {
+        btn.onclick = () => {
+          const key = btn.dataset.doneKey;
+          if (!state.pastExamDone) state.pastExamDone = {};
+          state.pastExamDone[key] = !state.pastExamDone[key];
+          saveState();
+          renderPastExamBody();
+        };
+      });
+
+      bodyEl.querySelectorAll("[data-jump-doc]").forEach((btn) => {
+        btn.onclick = () => {
+          const docId = btn.dataset.jumpDoc;
+          if (docId) {
+            switchStudioMode("reader");
+            openDoc(docId);
+          }
+        };
+      });
+    }
+
+    if (!preserveShell || !document.getElementById("pastExamBody")) {
+      const isDesktopWidth = window.innerWidth > 820;
+      let html = renderDojoTabBar();
+      html += '<div class="past-shell">';
+      html += '<section class="past-header-card">';
+      html += '<div class="past-eyebrow">日本商工会議所 公式公開問題・講評アーカイブ</div>';
+      html += '<h2 class="past-title">公式過去問・サンプル問題</h2>';
+      html += '<p class="past-lead">1級本試験（第158〜174回）・2級/3級公式サンプル問題・2027年出題区分改定資料を横断検索し、該当単元へ直結します。</p>';
+      html += "</section>";
+
+      const filterTabs = [
+        { id: "l1", label: "1級 本試験 (" + l1List.length + ")" },
+        { id: "l2", label: "2級 サンプル (" + l2List.length + ")" },
+        { id: "l3", label: "3級 サンプル (" + l3List.length + ")" },
+        { id: "resources", label: "2027改定・公式統計" }
+      ];
+
+      html += '<div class="past-toolbar"><div class="past-filter-tabs">';
+      filterTabs.forEach((ft) => {
+        html += '<button type="button" class="past-filter-btn ' + (pastExamState.filter === ft.id ? "active" : "") + '" data-past-filter="' + ft.id + '">' + escapeHtml(ft.label) + "</button>";
+      });
+      html += "</div>";
+      html += '<input id="pastExamSearch" class="past-search-input" type="search" aria-label="過去問・論点・回次を検索" placeholder="例: 第174回 / 収益認識 / 連結 / 2027" value="' + escapeHtml(pastExamState.query) + '" />';
+      html += "</div>";
+
+      html += '<details id="pastOverviewDetails" class="past-overview-details"' + (isDesktopWidth ? " open" : "") + ">";
+      html += '<summary class="past-overview-summary"><span class="past-overview-label">1級 合格率推移・演習進捗（済 <span id="pastDoneSummaryVal">' + doneCount + "件</span>）</span></summary>";
+      html += '<div class="past-overview-body">';
+      html += '<div class="past-kpi-grid">';
+      html += '<div class="past-kpi"><div class="past-kpi-label">1級 本試験</div><div class="past-kpi-val">' + l1List.length + "回分</div></div>";
+      html += '<div class="past-kpi"><div class="past-kpi-label">2級 サンプル</div><div class="past-kpi-val">' + l2List.length + "セット</div></div>";
+      html += '<div class="past-kpi"><div class="past-kpi-label">3級 サンプル</div><div class="past-kpi-val">' + l3List.length + "セット</div></div>";
+      html += '<div class="past-kpi"><div class="past-kpi-label">演習済マーク</div><div class="past-kpi-val" id="pastDoneKpiVal">' + doneCount + "件</div></div>";
+      html += "</div>";
+
+      const chartSvg = buildPastPassRateChartSvg(pe.stats && pe.stats.level1);
+      if (chartSvg) {
+        html += '<section class="past-chart-card">';
+        html += '<div class="past-chart-head"><span class="past-chart-title">1級 統一試験 合格率推移（第156〜173回）</span><span class="past-chart-sub">基準線: 10.0%</span></div>';
+        html += chartSvg;
+        html += "</section>";
+      }
+      html += "</div></details>";
+
+      html += '<div id="pastExamBody"></div>';
+      html += "</div>";
+
+      root.innerHTML = html;
+      bindDojoTabBar(root);
+
+      root.querySelectorAll("[data-past-filter]").forEach((btn) => {
+        btn.onclick = () => {
+          pastExamState.filter = btn.dataset.pastFilter;
+          root.querySelectorAll("[data-past-filter]").forEach((b) => {
+            b.classList.toggle("active", b.dataset.pastFilter === pastExamState.filter);
+          });
+          renderPastExamBody();
+        };
+      });
+
+      const searchEl = document.getElementById("pastExamSearch");
+      if (searchEl) {
+        searchEl.addEventListener("input", (e) => {
+          pastExamState.query = e.target.value;
+          renderPastExamBody();
+        });
+      }
+    }
+
+    renderPastExamBody();
   }
 
   window.BokiStudioTools = {

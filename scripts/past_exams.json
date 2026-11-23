@@ -1,0 +1,2088 @@
+{
+  "verifiedAt": "2026-11-23",
+  "copyrightNotice": "日商簿記検定試験の過去問題・サンプル問題・答案用紙・出題の意図・講評の著作権は日本商工会議所に帰属します。本サイトでは無断転載を行わず、日本商工会議所公式サイト（kentei.ne.jp）の公開PDFへ直接リンクしています。",
+  "officialHubs": [
+    {
+      "title": "日本商工会議所 1級過去問題（第158回〜第174回）",
+      "url": "https://www.kentei.ne.jp/bookkeeping/class1/1qkako",
+      "desc": "公式公開されている全12回分の1級問題PDF一覧"
+    },
+    {
+      "title": "日本商工会議所 2級サンプル問題（第1〜第5セット）",
+      "url": "https://www.kentei.ne.jp/bookkeeping/class-s/sample/sample-two",
+      "desc": "ネット試験・統一試験対応の公式問題・答案用紙PDF"
+    },
+    {
+      "title": "日本商工会議所 3級サンプル問題（第1〜第5セット）",
+      "url": "https://www.kentei.ne.jp/bookkeeping/sample/sample_3",
+      "desc": "3級の新形式対応公式問題・答案用紙PDF"
+    },
+    {
+      "title": "ネットスクール 公式サンプル問題 無料解説講義",
+      "url": "https://www.net-school.co.jp/special/jcci_bokisample_kaisetsu/",
+      "desc": "日商公式サイトからも案内されている2級・3級サンプル問題の無料解答・解説講義"
+    },
+    {
+      "title": "日本商工会議所 出題の意図・講評",
+      "url": "https://www.kentei.ne.jp/bookkeeping/review",
+      "desc": "試験委員による公式の作問意図・受験者正答率の講評PDF"
+    },
+    {
+      "title": "日本商工会議所 受験者データ（統一・ネット）",
+      "url": "https://www.kentei.ne.jp/bookkeeping/candidate-data",
+      "desc": "1級・2級・3級の全回受験者数・合格者数・合格率"
+    },
+    {
+      "title": "いぬぼき（3級・2級 無料問題集＆予想模試）",
+      "url": "https://inuboki.com/",
+      "desc": "仕訳・単元別問題と無料予想模試"
+    },
+    {
+      "title": "簿記ペディア（1級〜3級 過去問解説・論点索引）",
+      "url": "https://bokipedia.jp/",
+      "desc": "1級過去問の詳細解説と論点別検索"
+    }
+  ],
+  "official2027Docs": [
+    {
+      "title": "2027年度（令和9年度）商工会議所簿記検定試験 出題区分表【確定版】",
+      "url": "https://www.kentei.ne.jp/wp/wp-content/uploads/2014/10/2027kubunhyo_fixed.pdf"
+    },
+    {
+      "title": "2027年度 商業簿記標準・許容勘定科目表（2〜3級）【確定版】",
+      "url": "https://www.kentei.ne.jp/wp/wp-content/uploads/2014/10/2027kamokuhyo_fixed.pdf"
+    },
+    {
+      "title": "2027年度 改定の趣旨と検定試験への反映【確定版】",
+      "url": "https://www.kentei.ne.jp/wp/wp-content/uploads/2014/10/2027_kaitei_shushi_fixed.pdf"
+    },
+    {
+      "title": "日商簿記検定 合格のための5つのポイント（公式）",
+      "url": "https://www.kentei.ne.jp/wp/wp-content/uploads/2015/03/gokaku5.pdf"
+    }
+  ],
+  "stats": {
+    "level1": [
+      [
+        "173（2026.06.14）",
+        "11,959名",
+        "9,806名",
+        "2,076名",
+        "21.2%"
+      ],
+      [
+        "171（2025.11.16）",
+        "13,088名",
+        "10,524名",
+        "1,604名",
+        "15.2%"
+      ],
+      [
+        "170（2025.6.8）",
+        "11,827名",
+        "9,610名",
+        "1,343名",
+        "14.0%"
+      ],
+      [
+        "168（2024.11.17）",
+        "12,939名",
+        "10,420名",
+        "1,572名",
+        "15.1%"
+      ],
+      [
+        "167（2024.6.9）",
+        "11,798名",
+        "9,457名",
+        "992名",
+        "10.5%"
+      ],
+      [
+        "165（2023.11.19）",
+        "12,886名",
+        "10,251名",
+        "1,722名",
+        "16.8%"
+      ],
+      [
+        "164（2023.6.11）",
+        "11,468名",
+        "9,295名",
+        "1,164名",
+        "12.5％"
+      ],
+      [
+        "162（2022.11.20）",
+        "12,286名",
+        "9,828名",
+        "1,027名",
+        "10.4%"
+      ],
+      [
+        "161（2022.6.12）",
+        "11,002名",
+        "8,918名",
+        "902名",
+        "10.1％"
+      ],
+      [
+        "159（2021.11.21）",
+        "11,389名",
+        "9,194名",
+        "935名",
+        "10.2％"
+      ],
+      [
+        "158（2021.6.13）",
+        "9,310名",
+        "7,594名",
+        "746名",
+        "9.8％"
+      ],
+      [
+        "157（2021.2.28）",
+        "7,785名",
+        "6,351名",
+        "502名",
+        "7.9％"
+      ],
+      [
+        "156（2020.11.15）",
+        "10,078名",
+        "8,553名",
+        "1,158名",
+        "13.5％"
+      ]
+    ],
+    "level2Unified": [
+      [
+        "173(2026.06.14)",
+        "5,724名",
+        "4,821名",
+        "728名",
+        "15.1%"
+      ],
+      [
+        "172（2026.02.22）",
+        "7,115名",
+        "6,038名",
+        "911名",
+        "15.1%"
+      ],
+      [
+        "171（2025.11.16）",
+        "7,512名",
+        "6,332名",
+        "1,492名",
+        "23.6%"
+      ],
+      [
+        "170（2025.06.08）",
+        "6,560名",
+        "5,383名",
+        "1,193名",
+        "22.2%"
+      ],
+      [
+        "169（2025.02.23）",
+        "8,606名",
+        "7,118名",
+        "1,486名",
+        "20.9%"
+      ],
+      [
+        "168（2024.11.17）",
+        "9,116名",
+        "7,589名",
+        "2,187名",
+        "28.8%"
+      ],
+      [
+        "167（2024.06.09）",
+        "7,786名",
+        "6,310名",
+        "1,442名",
+        "22.9%"
+      ],
+      [
+        "166（2024.02.25）",
+        "10,814名",
+        "8,728名",
+        "1,356名",
+        "15.5％"
+      ],
+      [
+        "165（2023.11.19）",
+        "11,572名",
+        "9,511名",
+        "1,133名",
+        "11.9％"
+      ],
+      [
+        "164（2023.06.11）",
+        "10,618名",
+        "8,454名",
+        "1,788名",
+        "21.1％"
+      ]
+    ],
+    "level3Unified": [
+      [
+        "173(2026.06.14)",
+        "16,533名",
+        "14,359名",
+        "4,854名",
+        "33.8%"
+      ],
+      [
+        "172(2026.02.22)",
+        "19,876名",
+        "17,140名",
+        "5,757名",
+        "33.6%"
+      ],
+      [
+        "171(2025.11.16)",
+        "19,499名",
+        "16,648名",
+        "5,743名",
+        "34.5%"
+      ],
+      [
+        "170(2025.06.08)",
+        "22,163名",
+        "18,935名",
+        "8,024名",
+        "42.4%"
+      ],
+      [
+        "169(2025.02.23)",
+        "24,681名",
+        "21,026名",
+        "6,041名",
+        "28.7%"
+      ],
+      [
+        "168(2024.11.17)",
+        "22,922名",
+        "19,588名",
+        "5,785名",
+        "29.5%"
+      ],
+      [
+        "167（2024.06.09)",
+        "24,497名",
+        "20,927名",
+        "8,520名",
+        "40.7%"
+      ],
+      [
+        "166（2024.02.25）",
+        "28,565名",
+        "23,977名",
+        "8,706名",
+        "36.3％"
+      ],
+      [
+        "165(2023.11.19)",
+        "30,387名",
+        "25,727名",
+        "8,653名",
+        "33.6%"
+      ],
+      [
+        "164(2023.06.11)",
+        "31,818名",
+        "26,757名",
+        "9,107名",
+        "34.0％"
+      ]
+    ],
+    "level2Net": [
+      [
+        "2026年4月～2026年9月",
+        "71,592名",
+        "22,011名",
+        "30.7%"
+      ],
+      [
+        "2025年4月～2026年3月",
+        "141,072名",
+        "46,351名",
+        "32.9%"
+      ],
+      [
+        "2024年4月～2025年3月",
+        "124,429名",
+        "44,359名",
+        "35.7%"
+      ],
+      [
+        "2023年4月～2024年3月",
+        "119,036名",
+        "41,912名",
+        "35.2％"
+      ],
+      [
+        "2022年4月～2023年3月",
+        "105,289名",
+        "39,076名",
+        "37.1%"
+      ],
+      [
+        "2021年4月～2022年3月",
+        "106,833名",
+        "40,713名",
+        "38.1%"
+      ],
+      [
+        "2020年12月～2021年3月",
+        "29,043名",
+        "13,525名",
+        "46.6%"
+      ]
+    ],
+    "level3Net": [
+      [
+        "2026年4月～2026年9月",
+        "130,590名",
+        "56,682名",
+        "43.4%"
+      ],
+      [
+        "2025年4月～2026年3月",
+        "276,477名",
+        "112,797名",
+        "40.8%"
+      ],
+      [
+        "2024年4月～2025年3月",
+        "254,433名",
+        "98,235名",
+        "38.6%"
+      ],
+      [
+        "2023年4月～2024年3月",
+        "238,155名",
+        "88,264名",
+        "37.1％"
+      ],
+      [
+        "2022年4月～2023年3月",
+        "207,423名",
+        "85,378名",
+        "41.2%"
+      ],
+      [
+        "2021年4月～2022年3月",
+        "206,149名",
+        "84,504名",
+        "41.0%"
+      ],
+      [
+        "2020年12月～2021年3月",
+        "58,700名",
+        "24,043名",
+        "41.0%"
+      ]
+    ]
+  },
+  "level1Exams": [
+    {
+      "examNo": 174,
+      "date": "2026-11-15",
+      "passRate": "集計中",
+      "examinees": null,
+      "passers": null,
+      "officialPageUrl": "https://www.kentei.ne.jp/51879",
+      "comAccPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/11/174_01.pdf",
+      "indCostPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/11/174_02.pdf",
+      "reviewPdfUrl": null,
+      "subjects": {
+        "commercial": {
+          "topics": [
+            "検収基準への会計方針変更",
+            "返品権付販売（返金負債・返品資産）",
+            "破産更生債権等・担保控除",
+            "外貨建有価証券（部分純資産直入・償却原価）",
+            "新株予約権（自己株式交付・失効）",
+            "大規模修繕と耐用年数延長",
+            "定率法改定償却率",
+            "車両減損",
+            "予定取引の為替予約（繰延ヘッジ）"
+          ],
+          "summary": "個別決算総合F/S（B/S・P/L主要項目）。収益認識＋外貨＋有価証券＋固定資産改定償却＋ヘッジが連動。",
+          "unitIds": [
+            "L1C-01",
+            "L1C-02",
+            "L1C-03",
+            "L1C-04",
+            "L1C-05",
+            "L1C-06",
+            "L1C-10"
+          ]
+        },
+        "accounting": {
+          "topics": [
+            "割引計算横断（減損WACC・リース・退職給付・ARO）",
+            "国庫補助金圧縮記帳（積立金方式）＋税効果"
+          ],
+          "summary": "第1問：4基準の割引率とAI誤謬指摘。第2問：積立金方式の圧縮記帳と税効果会計。",
+          "unitIds": [
+            "L1C-06",
+            "L1C-07",
+            "L1C-08",
+            "L1C-09",
+            "L1C-11"
+          ]
+        },
+        "industrial": {
+          "topics": [
+            "シングル・プラン標準原価計算",
+            "材料副費予定配賦",
+            "原料受入価格差異",
+            "配合差異・歩留差異（加重平均単価）"
+          ],
+          "summary": "3原料の配合・歩留差異。配合差異を加重平均単価との差で捉える思考問題を含む。",
+          "unitIds": [
+            "L2I-02",
+            "L1I-04"
+          ]
+        },
+        "costing": {
+          "topics": [
+            "業務的意思決定（追加受注・機会原価・能力制約）",
+            "CVP変動費率低下",
+            "ABC vs 伝統配賦",
+            "減価償却タックス・シールド",
+            "事業部長評価",
+            "全部標準原価の操業度差異"
+          ],
+          "summary": "第1問：生産能力1,000時間制約下の追加受注判断。第2問：管理会計基礎の空欄選択。",
+          "unitIds": [
+            "L1I-05",
+            "L1I-07",
+            "L1I-08",
+            "L1I-09",
+            "L1I-10"
+          ]
+        }
+      },
+      "examinerTakeaway": "講評未公開（2026年11月施行直後）。商業簿記は個別総合、会計学は割引計算横断＋圧縮記帳税効果、工・原は標準配合/歩留＋業務的意思決定。",
+      "note2027": "2027年改定後もそのまま最良の総合演習素材。割引率横断の思考問題はL1C-06〜09の復習に最適。"
+    },
+    {
+      "examNo": 173,
+      "date": "2026-06-14",
+      "passRate": "21.2%",
+      "examinees": 9806,
+      "passers": 2076,
+      "officialPageUrl": "https://www.kentei.ne.jp/50771",
+      "comAccPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/06/173_01.pdf",
+      "indCostPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/06/173_02.pdf",
+      "reviewPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2019/07/173-1-kouhyou.pdf",
+      "subjects": {
+        "commercial": {
+          "topics": [
+            "連結会計（孫会社SG社・子会社間取引）",
+            "顧客関連資産",
+            "企業結合に係る特定勘定",
+            "親会社からの子会社従業員ストック・オプション",
+            "未実現利益（商品→備品）"
+          ],
+          "summary": "連結実務の発展論点を中心に出題。顧客関連資産の計上・償却や連結企業間取引の相殺が鍵。",
+          "unitIds": [
+            "L1C-10",
+            "L1C-13",
+            "L1C-14",
+            "L1C-15"
+          ]
+        },
+        "accounting": {
+          "topics": [
+            "連結5表の表示区分",
+            "連単分離の穴埋め",
+            "税効果会計（資産負債法と繰延法・OCI）"
+          ],
+          "summary": "第1問：連結F/S各表の表示区分。第2問：連単分離・税効果会計（純利益とOCIの区別）。",
+          "unitIds": [
+            "L1C-11",
+            "L1C-14"
+          ]
+        },
+        "industrial": {
+          "topics": [
+            "品目グループ別標準原価計算",
+            "セールス・ミックス変化の差異",
+            "制度外原価計算の必要性"
+          ],
+          "summary": "多品種環境で品目グループ標準を使う際の原価管理機能の限界と1単位あたり採算把握。",
+          "unitIds": [
+            "L1I-04",
+            "L1I-08"
+          ]
+        },
+        "costing": {
+          "topics": [
+            "直接標準原価計算と内部振替価格（不完全市場）",
+            "サブスクリプション型ビジネスの差額原価収益・LTV/解約率"
+          ],
+          "summary": "問題1：外部市場不完全時の内部振替価格変更。問題2：サブスクKPI（MRR/ARR/解約率/Jカーブ）。",
+          "unitIds": [
+            "L1I-05",
+            "L1I-07",
+            "L1I-09"
+          ]
+        }
+      },
+      "examinerTakeaway": "初見論点（顧客関連資産・特定勘定・サブスク）でも問題文の誘導と基本原則から部分点を積み上げられる設計。計算では税効果と解約率で差がついた。",
+      "note2027": "のれんとのれん以外（無形資産）の峻別やFP&A視点の内部振替価格など、最新の実務・制度議論を反映。"
+    },
+    {
+      "examNo": 171,
+      "date": "2025-11-16",
+      "passRate": "15.2%",
+      "examinees": 10524,
+      "passers": 1604,
+      "officialPageUrl": "https://www.kentei.ne.jp/49444",
+      "comAccPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/11/171_01.pdf",
+      "indCostPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/11/171_02.pdf",
+      "reviewPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/01/171-1-kouhyou-1.pdf",
+      "subjects": {
+        "commercial": {
+          "topics": [
+            "複数年度連結F/S・開始仕訳",
+            "連結税効果（時価評価DTL）",
+            "段階取得・一部売却とOCI消去",
+            "未実現利益・貸倒引当金調整"
+          ],
+          "summary": "連結開始仕訳の累積と子会社資産時価評価の税効果（のれん・NCI算定に直結）を問う総合問題。",
+          "unitIds": [
+            "L1C-11",
+            "L1C-13",
+            "L1C-14"
+          ]
+        },
+        "accounting": {
+          "topics": [
+            "株式無償交付取引・専門用語",
+            "直接法によるキャッシュ・フロー計算書",
+            "ソフトウェア償却（見込販売収益/数量 vs 均等額）"
+          ],
+          "summary": "第2問の直接法C/F（営業収入・仕入支出）で明確な得点差。第3問ソフトウェアは基本だが比較忘れに注意。",
+          "unitIds": [
+            "L1C-06",
+            "L1C-10",
+            "L1C-14"
+          ]
+        },
+        "industrial": {
+          "topics": [
+            "部門別原価計算（直接配賦法・連立方程式法）",
+            "補助部門費予定配賦仕訳",
+            "内製 vs 外部委託判断の基礎"
+          ],
+          "summary": "連立方程式法の理解と2級基礎の予定配賦仕訳（予定配賦率×実際消費量）の正確さが焦点。",
+          "unitIds": [
+            "L2I-03",
+            "L1I-01"
+          ]
+        },
+        "costing": {
+          "topics": [
+            "設備投資意思決定（単純投資・取替投資・無税ケース）",
+            "NPV vs IRR（相互排他的投資案）"
+          ],
+          "summary": "設備投資の4角度網羅問題。取替投資における旧設備減価償却節税額の喪失で正答率が低下。",
+          "unitIds": [
+            "L1I-10"
+          ]
+        }
+      },
+      "examinerTakeaway": "商業簿記は連結税効果と開始仕訳が合否を分け、工業簿記は2級基本仕訳での失点、原価計算は取替投資NPVの苦手意識が顕著だった。",
+      "note2027": "連結×税効果・直接法CF・取替NPVという1級の王道3本柱が揃った良問。"
+    },
+    {
+      "examNo": 170,
+      "date": "2025-06-08",
+      "passRate": "14.0%",
+      "examinees": 9610,
+      "passers": 1343,
+      "officialPageUrl": "https://www.kentei.ne.jp/48153",
+      "comAccPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/06/170_01.pdf",
+      "indCostPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/06/170_02.pdf",
+      "reviewPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/07/170-1-kouhyou-1.pdf",
+      "subjects": {
+        "commercial": {
+          "topics": [
+            "割賦販売（重要な金融要素・利息未決算・商品取戻し）",
+            "CF見積法貸倒引当金",
+            "商品保証引当金",
+            "その他資本剰余金配当の株主側処理",
+            "新株予約権付社債の行使",
+            "ARO・為替予約"
+          ],
+          "summary": "連結が出題されない回。個別総合で収益認識（金融要素）と資本剰余金配当など幅広い個別論点を網羅。",
+          "unitIds": [
+            "L1C-02",
+            "L1C-03",
+            "L1C-04",
+            "L1C-05",
+            "L1C-07",
+            "L1C-10"
+          ]
+        },
+        "accounting": {
+          "topics": [
+            "理論四択（会計基準・期間差異/一時差異）",
+            "のれんを含む資産グループの減損配分",
+            "工事契約（契約資産/債権/負債・原価回収基準・工事損失引当金・契約変更）"
+          ],
+          "summary": "第2問でのれん増加額の減損配分手順、第3問で収益認識基準に基づく工事契約全般を出題。",
+          "unitIds": [
+            "L1C-05",
+            "L1C-06",
+            "L1C-11"
+          ]
+        },
+        "industrial": {
+          "topics": [
+            "標準原価計算の差異分析網羅",
+            "混合差異・ロットサイズ変更差異",
+            "予算差異のみが原価管理上意味を持つ理由",
+            "原料配合・歩留差異"
+          ],
+          "summary": "公式丸暗記ではなく「本来取り出したい差異 vs ノイズ差異」の分解思想を問う。",
+          "unitIds": [
+            "L1I-04"
+          ]
+        },
+        "costing": {
+          "topics": [
+            "サービス業の差額原価収益分析（準固定費2段階）",
+            "事業部 vs 事業部長の業績評価（ROI・RI・管理可能性）"
+          ],
+          "summary": "非製造業（英会話教室・スポーツ産業）を舞台に準固定費の場合分けと管理可能ROI/RIを出題。",
+          "unitIds": [
+            "L1I-07",
+            "L1I-09"
+          ]
+        }
+      },
+      "examinerTakeaway": "連結に山を張ると個別総合で足切りされる典型回。2級の基礎（契約資産/負債・標準差異）を100%固めることが1級合格の最短路と講評。",
+      "note2027": "連結が出ない回の典型例。EX-01にも教訓として反映。"
+    },
+    {
+      "examNo": 168,
+      "date": "2024-11-17",
+      "passRate": "15.1%",
+      "examinees": 10420,
+      "passers": 1572,
+      "officialPageUrl": "https://www.kentei.ne.jp/46525",
+      "comAccPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/11/168_01.pdf",
+      "indCostPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/11/168_02.pdf",
+      "reviewPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/01/168-1-kouhyou-1.pdf",
+      "subjects": {
+        "commercial": {
+          "topics": [
+            "リベート（売上割戻）の収益認識",
+            "検収基準（売上・売上原価・期末商品の連動）",
+            "備品定率法の改訂償却率",
+            "社債",
+            "税効果・課税所得"
+          ],
+          "summary": "決算整理・F/S作成総合問題。売上割戻の控除漏れや検収基準の原価連動に注意。",
+          "unitIds": [
+            "L1C-03",
+            "L1C-05",
+            "L1C-06",
+            "L1C-11"
+          ]
+        },
+        "accounting": {
+          "topics": [
+            "財務会計正誤問題",
+            "3か年連結B/S（のれん償却・持分法→連結の段階取得・一部売却）"
+          ],
+          "summary": "第2問で投資と資本の相殺消去・持分法から子会社化・一部売却を3か年連続で処理。",
+          "unitIds": [
+            "L1C-01",
+            "L1C-13"
+          ]
+        },
+        "industrial": {
+          "topics": [
+            "費目別計算と工業簿記一巡",
+            "外部・内部材料副費の予定配賦",
+            "継続記録法と棚卸減耗",
+            "消費価格差異"
+          ],
+          "summary": "2級にも近い費目別計算の総合問題だが、1級らしく資料読解と計算量が大幅に増えている。",
+          "unitIds": [
+            "L2I-02",
+            "L1I-01"
+          ]
+        },
+        "costing": {
+          "topics": [
+            "CVP分析の理論的基礎（変動費/固定費の本質・最小自乗法）",
+            "準固定費を伴う業務的意思決定"
+          ],
+          "summary": "問題1は日本語の流れだけで選ぶと誤答する理論問題。問題2は準固定費を含む業務的意思決定。",
+          "unitIds": [
+            "L2I-08",
+            "L1I-05",
+            "L1I-09"
+          ]
+        }
+      },
+      "examinerTakeaway": "会計学の連結3か年や商業簿記の決算総合で基礎の正確さが問われ、原価計算では変動費/固定費の定義の深い理解が要求された。",
+      "note2027": "紙手形に依存せず、収益認識・税効果・連結・業務的意思決定中心のため2027年以降も有効。"
+    },
+    {
+      "examNo": 167,
+      "date": "2024-06-09",
+      "passRate": "10.5%",
+      "examinees": 9457,
+      "passers": 992,
+      "officialPageUrl": "https://www.kentei.ne.jp/45137",
+      "comAccPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/06/167_01.pdf",
+      "indCostPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/06/167_02.pdf",
+      "reviewPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/08/167-1-kouhyou-1.pdf",
+      "subjects": {
+        "commercial": {
+          "topics": [
+            "個別F/S＋連結F/S結合総合",
+            "取引価格の複数履行義務配分",
+            "売価還元法",
+            "金融商品",
+            "退職給付",
+            "ソフトウェア・減損"
+          ],
+          "summary": "個別総合に連結が結合した難問（合格率10.5%）。履行義務配分と個別→連結波及の理解が鍵。",
+          "unitIds": [
+            "L1C-03",
+            "L1C-05",
+            "L1C-06",
+            "L1C-09",
+            "L1C-13"
+          ]
+        },
+        "accounting": {
+          "topics": [
+            "理論問題",
+            "分配可能額の計算",
+            "1株当たり当期純利益（EPS）",
+            "事業分離・組織再編"
+          ],
+          "summary": "分配可能額・希薄化EPS・事業分離など会社法・開示と再編の計算を網羅。",
+          "unitIds": [
+            "L1C-10",
+            "L1C-15"
+          ]
+        },
+        "industrial": {
+          "topics": [
+            "工程別組別総合原価計算"
+          ],
+          "summary": "第1工程・第2工程と複数組製品の組み合わせ計算を正確に捌く総合原価計算。",
+          "unitIds": [
+            "L2I-06",
+            "L1I-02"
+          ]
+        },
+        "costing": {
+          "topics": [
+            "最適セールス・ミックス（LP・線型計画法）",
+            "予算実績差異分析"
+          ],
+          "summary": "制約条件複数下のLP図解法と予算差異分析。",
+          "unitIds": [
+            "L1I-05",
+            "L1I-06"
+          ]
+        }
+      },
+      "examinerTakeaway": "直近数年で最も難しかった回（10.5%）。商業簿記の個別＋連結連動や組織再編で失点が多く、工・原の標準問題で確実に得点する重要性が際立った。",
+      "note2027": "EX-01の過去問難易度ベンチマーク（10.5%低合格率回）として参照。"
+    },
+    {
+      "examNo": 165,
+      "date": "2023-11-19",
+      "passRate": "16.8%",
+      "examinees": 10251,
+      "passers": 1722,
+      "officialPageUrl": "https://www.kentei.ne.jp/43001",
+      "comAccPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2023/11/165_01.pdf",
+      "indCostPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2023/11/165_02.pdf",
+      "reviewPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/01/165-1-kouhyou-1.pdf",
+      "subjects": {
+        "commercial": {
+          "topics": [
+            "売価還元法",
+            "収益認識（履行義務識別・独立販売価格配分・一定期間充足）",
+            "為替予約振当処理",
+            "外貨建有価証券",
+            "ARO・社債償還・退職給付"
+          ],
+          "summary": "個別決算総合問題。売価還元法と収益認識を軸に外貨・ARO・社債・退職給付を配置。",
+          "unitIds": [
+            "L1C-03",
+            "L1C-04",
+            "L1C-05",
+            "L1C-07",
+            "L1C-09",
+            "L1C-12"
+          ]
+        },
+        "accounting": {
+          "topics": [
+            "会計上の見積りの開示・税効果/貸倒見積高の穴埋め",
+            "連結株主資本等変動計算書（連結S/S）ダイレクト算定"
+          ],
+          "summary": "問題2の連結S/S（利益剰余金・OCI累計額・一部売却）が合否を分けた。",
+          "unitIds": [
+            "L1C-02",
+            "L1C-10",
+            "L1C-11",
+            "L1C-13",
+            "L1C-14"
+          ]
+        },
+        "industrial": {
+          "topics": [
+            "ロット別標準原価計算（仕掛品勘定・差異分析・P/L・差異処理）"
+          ],
+          "summary": "ロット単位で完成/未完成を区別する以外は標準的な計算で、得点率は良好。",
+          "unitIds": [
+            "L1I-04"
+          ]
+        },
+        "costing": {
+          "topics": [
+            "設備の取替投資（NPV・回収期間法・再投資仮定・旧設備売却損節税）"
+          ],
+          "summary": "取替投資の旧設備売却損・減価償却タックスシールドの落とし穴を丁寧に問う問題。",
+          "unitIds": [
+            "L1I-10"
+          ]
+        }
+      },
+      "examinerTakeaway": "ロット別標準原価計算は高得点だったが、連結S/Sと取替投資NPVでの差が大きい。取替投資の節税喪失ロジックは頻出。",
+      "note2027": "ロット別標準・取替投資NPVの定番教材としてそのまま有効。"
+    },
+    {
+      "examNo": 164,
+      "date": "2023-06-11",
+      "passRate": "12.5%",
+      "examinees": 9295,
+      "passers": 1164,
+      "officialPageUrl": "https://www.kentei.ne.jp/40744",
+      "comAccPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2023/06/164_01.pdf",
+      "indCostPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2023/06/164_02.pdf",
+      "reviewPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2023/08/164-1-kouhyou-1.pdf",
+      "subjects": {
+        "commercial": {
+          "topics": [
+            "決算整理前T/B→P/L・B/S作成",
+            "返品権付販売",
+            "インプット法収益認識",
+            "受注損失引当金"
+          ],
+          "summary": "収益認識会計基準における将来の見積りと事後修正を中心に据えた決算総合問題。",
+          "unitIds": [
+            "L1C-05",
+            "L1C-07"
+          ]
+        },
+        "accounting": {
+          "topics": [
+            "根拠から問う理論選択問題",
+            "連結財務諸表・包括利益計算書（組替調整額・NCI按分）"
+          ],
+          "summary": "丸暗記では解けない理論選択と、連結包括利益計算書の作成プロセスを問う。",
+          "unitIds": [
+            "L1C-01",
+            "L1C-14"
+          ]
+        },
+        "industrial": {
+          "topics": [
+            "工業簿記の実績把握・補助簿（原価計算票・材料カード）",
+            "継続記録法 vs 棚卸計算法"
+          ],
+          "summary": "実務帳簿と原価計算基準の盲点を突く工業簿記の基礎理論・計算問題。",
+          "unitIds": [
+            "L2I-02",
+            "L1I-01"
+          ]
+        },
+        "costing": {
+          "topics": [
+            "品質原価計算（予防・評価・内部/外部失敗原価）",
+            "ライフサイクル・コスティング",
+            "総合原価計算（正常/異常仕損費）"
+          ],
+          "summary": "第1問で戦略的原価管理（COQ・LCC）、第2問で総合原価の仕損費計算を出題。",
+          "unitIds": [
+            "L1I-02",
+            "L1I-08"
+          ]
+        }
+      },
+      "examinerTakeaway": "収益認識の見積り修正や包括利益、品質原価・LCCなど、暗記でなく根拠理解を求める傾向が鮮明に表れた回。",
+      "note2027": "戦略的原価管理（L1I-08）と包括利益（L1C-14）の重要性を裏付ける回。"
+    },
+    {
+      "examNo": 162,
+      "date": "2022-11-20",
+      "passRate": "10.4%",
+      "examinees": 9828,
+      "passers": 1027,
+      "officialPageUrl": "https://www.kentei.ne.jp/38658",
+      "comAccPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2022/11/162-1-01.pdf",
+      "indCostPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2022/11/162-1-02.pdf",
+      "reviewPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2023/01/162-1-kouhyou-3.pdf",
+      "subjects": {
+        "commercial": {
+          "topics": [
+            "B/S中心の決算総合",
+            "返品権付販売（変動対価）",
+            "手形割引（保証債務）",
+            "為替予約振当",
+            "営業外支払手形金利",
+            "減損・自己株式処分"
+          ],
+          "summary": "B/S中心回答の総合問題。収益認識基準下の返品権付販売が難関となった。",
+          "unitIds": [
+            "L1C-02",
+            "L1C-04",
+            "L1C-05",
+            "L1C-06",
+            "L1C-10"
+          ]
+        },
+        "accounting": {
+          "topics": [
+            "会社法・金商法の開示制度を含む多肢選択",
+            "会計基準・制度の裏付け"
+          ],
+          "summary": "開示実務（金商法・会社法）まで踏み込んだ理論多肢選択問題。",
+          "unitIds": [
+            "L1C-01",
+            "L1C-15"
+          ]
+        },
+        "industrial": {
+          "topics": [
+            "部門別計算第2次集計（直接配賦法）",
+            "活動基準原価計算（ABC）",
+            "製品別計算"
+          ],
+          "summary": "部門別配賦とABCのコストドライバー別配賦の比較。総じて高得点。",
+          "unitIds": [
+            "L2I-03",
+            "L1I-01",
+            "L1I-08"
+          ]
+        },
+        "costing": {
+          "topics": [
+            "完成品換算量の本質理論",
+            "総合原価計算の深掘り"
+          ],
+          "summary": "単なる公式ではなく完成品と仕掛品の価値差を調整する換算量の意味を問う。",
+          "unitIds": [
+            "L2I-05",
+            "L1I-02"
+          ]
+        }
+      },
+      "examinerTakeaway": "合格率10.4%。商業簿記のB/S作成と金商法・会社法開示で失点しやすい一方、ABC・部門別は高得点源になった。",
+      "note2027": "※商業簿記の手形割引・営業外支払手形は2027年4月改定で廃止・縮小されるため、その他論点を中心に活用。"
+    },
+    {
+      "examNo": 161,
+      "date": "2022-06-12",
+      "passRate": "10.1%",
+      "examinees": 8918,
+      "passers": 902,
+      "officialPageUrl": "https://www.kentei.ne.jp/37295",
+      "comAccPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2022/06/161-1-1.pdf",
+      "indCostPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2022/06/161-1-2.pdf",
+      "reviewPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2019/07/161-1-kouhyou.pdf",
+      "subjects": {
+        "commercial": {
+          "topics": [
+            "決算整理総合（T/B→P/L・B/S）",
+            "収益認識",
+            "金融商品",
+            "固定資産",
+            "退職給付",
+            "税効果会計"
+          ],
+          "summary": "相互に関連する決算整理事項を整理してP/L・B/Sを仕上げる総合力勝負。",
+          "unitIds": [
+            "L1C-03",
+            "L1C-05",
+            "L1C-06",
+            "L1C-09",
+            "L1C-11"
+          ]
+        },
+        "accounting": {
+          "topics": [
+            "連単表示区分・時価評価・棚卸評価・C/F表示の理論",
+            "リース取引（貸手側の3方法）"
+          ],
+          "summary": "第2問でリースの貸手側会計処理を体系的に出題。",
+          "unitIds": [
+            "L1C-01",
+            "L1C-08",
+            "L1C-14"
+          ]
+        },
+        "industrial": {
+          "topics": [
+            "部品の親子関係がある複数工程・複数部門の標準原価計算",
+            "部門責任別の差異分析"
+          ],
+          "summary": "自製部品原価標準→製品原価標準の積み上げと部門別能率差異の分離。",
+          "unitIds": [
+            "L1I-04"
+          ]
+        },
+        "costing": {
+          "topics": [
+            "総合予算編成（販売・製造・購買・予算P/L・現金収支・投下資本予算）"
+          ],
+          "summary": "予算編成の全体体系を網羅する総合問題（計算量が多く時間配分が鍵）。",
+          "unitIds": [
+            "L1I-06"
+          ]
+        }
+      },
+      "examinerTakeaway": "合格率10.1%。予算編成のボリュームと連単の細かい知識で時間圧迫が起きた回。",
+      "note2027": "※第2問のリース貸手処理は2027年の新リース基準（ASBJ第34号）ではL1C-08の貸手2区分へ整理して復習。"
+    },
+    {
+      "examNo": 159,
+      "date": "2021-11-21",
+      "passRate": "10.2%",
+      "examinees": 9194,
+      "passers": 935,
+      "officialPageUrl": "https://www.kentei.ne.jp/35588",
+      "comAccPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2021/11/boki-159-1Q_01.pdf",
+      "indCostPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2021/11/boki-159-1Q_02.pdf",
+      "reviewPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2022/01/159-1-kouhyou.pdf",
+      "subjects": {
+        "commercial": {
+          "topics": [
+            "本支店合併F/S（在外支店の財務諸表換算）",
+            "収益性負債の換算レート"
+          ],
+          "summary": "在外支店（本支店会計＋外貨換算）の合併F/Sという意表を突く出題。",
+          "unitIds": [
+            "L2C-11",
+            "L1C-12"
+          ]
+        },
+        "accounting": {
+          "topics": [
+            "会社法・金商法開示の四択",
+            "研究開発費・ソフトウェア",
+            "株主資本",
+            "企業結合"
+          ],
+          "summary": "開示規制と無形資産・株主資本・企業結合の基本処理。",
+          "unitIds": [
+            "L1C-06",
+            "L1C-10",
+            "L1C-15"
+          ]
+        },
+        "industrial": {
+          "topics": [
+            "修正パーシャル・プラン工程別標準総合原価計算",
+            "正常/異常仕損費",
+            "パーシャル vs シングルの理論"
+          ],
+          "summary": "勘定連絡図と工程別標準原価差異の原因分析。",
+          "unitIds": [
+            "L1I-02",
+            "L1I-04"
+          ]
+        },
+        "costing": {
+          "topics": [
+            "原価計算基準二の抜粋理論",
+            "標準配合・歩留差異",
+            "事業部業績測定（内部振替価格と余剰能力）"
+          ],
+          "summary": "直接原価計算と内部振替価格・追加加工意思決定の連携。",
+          "unitIds": [
+            "L1I-01",
+            "L1I-04",
+            "L1I-07"
+          ]
+        }
+      },
+      "examinerTakeaway": "在外支店の換算は盲点になりやすく合格率10.2%に留まった。標準原価計算の勘定記入法（パーシャル/シングル）は頻出理論。",
+      "note2027": "L2C-11（本支店）とL1C-12（外貨換算）の接続を意識する好素材。"
+    },
+    {
+      "examNo": 158,
+      "date": "2021-06-13",
+      "passRate": "9.8%",
+      "examinees": 7594,
+      "passers": 746,
+      "officialPageUrl": "https://www.kentei.ne.jp/34294",
+      "comAccPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2021/06/158-1-1.pdf",
+      "indCostPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2021/06/158-1-2.pdf",
+      "reviewPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2021/08/158-1-kouhyou.pdf",
+      "subjects": {
+        "commercial": {
+          "topics": [
+            "金融商品中心の決算整理後T/B（CF見積法・満期保有債券/社債の償却原価法）",
+            "連結会計（持分法→連結・子会社→関連会社への持分変動）"
+          ],
+          "summary": "時間価値・割引計算を伴う金融商品と、連結範囲の変動（支配獲得・喪失）の2問構成。",
+          "unitIds": [
+            "L1C-02",
+            "L1C-03",
+            "L1C-13"
+          ]
+        },
+        "accounting": {
+          "topics": [
+            "概念フレームワーク・接近法・定義の専門用語",
+            "過年度遡及修正（会計方針変更・誤謬訂正・見積り変更）"
+          ],
+          "summary": "遡及適用とプロスペクティブ処理の区別を1つの計算問題で徹底確認。",
+          "unitIds": [
+            "L1C-01"
+          ]
+        },
+        "industrial": {
+          "topics": [
+            "部門別計算（補助部門→動力部門→製造部門・予定配賦率の区別）",
+            "月次決算の材料勘定（受入価格差異・消費価格差異・月割棚卸減耗）"
+          ],
+          "summary": "配賦率の二段階区別と材料差異の発生時点分離。",
+          "unitIds": [
+            "L2I-02",
+            "L1I-01"
+          ]
+        },
+        "costing": {
+          "topics": [
+            "CVP分析（安全余裕率・経営レバレッジ）",
+            "予算管理の事後差異分析批判と対策（予算再編成等）"
+          ],
+          "summary": "CVP指標の網羅計算と実務的予算管理論。",
+          "unitIds": [
+            "L2I-08",
+            "L1I-05",
+            "L1I-06"
+          ]
+        }
+      },
+      "examinerTakeaway": "合格率9.8%。時間価値（割引計算）と過年度遡及修正、材料差異の時点区別など、本質理解を問う良問揃い。",
+      "note2027": "金融商品の割引計算と過年度遡及修正（L1C-01）の演習に最適。"
+    }
+  ],
+  "level2Samples": [
+    {
+      "id": "L2-S5",
+      "title": "2級 公式サンプル問題 第5セット",
+      "released": "2026年4月公開",
+      "parts": [
+        {
+          "label": "第1問（商業仕訳）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/2%E7%B4%9A_%E7%AC%AC1%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/2%E7%B4%9A_%E7%AC%AC1%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "建設仮勘定・工事完了引渡等仕訳5題"
+          ],
+          "unitIds": [
+            "L3-06",
+            "L2C-04"
+          ],
+          "note2027": "2027年以降も有効"
+        },
+        {
+          "label": "第2問（個別/連結論点）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/2%E7%B4%9A_%E7%AC%AC2%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/2%E7%B4%9A_%E7%AC%AC2%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "有価証券総合（売買目的・分記法・英米式締切）"
+          ],
+          "unitIds": [
+            "L2C-06"
+          ],
+          "note2027": "2027年以降も重要"
+        },
+        {
+          "label": "第3問（F/S作成・本支店）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/2%E7%B4%9A_%E7%AC%AC3%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/2%E7%B4%9A_%E7%AC%AC3%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "貸借対照表（B/S）作成総合"
+          ],
+          "unitIds": [
+            "L3-10",
+            "L2C-06"
+          ],
+          "note2027": "2027年以降も重要"
+        },
+        {
+          "label": "第4問(1)（工業仕訳）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/2%E7%B4%9A_%E7%AC%AC4%E5%95%8F%EF%BC%881%EF%BC%89_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/2%E7%B4%9A_%E7%AC%AC4%E5%95%8F%EF%BC%881%EF%BC%89_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "素材・買入部品購入・材料副費ほか工業仕訳3題"
+          ],
+          "unitIds": [
+            "L2I-02"
+          ],
+          "note2027": "毎回12点の得点源"
+        },
+        {
+          "label": "第4問(2)（原価計算）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/2%E7%B4%9A_%E7%AC%AC4%E5%95%8F%EF%BC%882%EF%BC%89_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/2%E7%B4%9A_%E7%AC%AC4%E5%95%8F%EF%BC%882%EF%BC%89_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "実際総合原価計算（平均法）"
+          ],
+          "unitIds": [
+            "L2I-05"
+          ],
+          "note2027": "2027年以降も重要"
+        },
+        {
+          "label": "第5問（CVP・標準/直接原価）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/2%E7%B4%9A_%E7%AC%AC5%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/2%E7%B4%9A_%E7%AC%AC5%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "チケット代理販売の損益分岐点・値上げシミュレーション"
+          ],
+          "unitIds": [
+            "L2I-08"
+          ],
+          "note2027": "最新形式のCVP応用"
+        }
+      ]
+    },
+    {
+      "id": "L2-S4",
+      "title": "2級 公式サンプル問題 第4セット",
+      "released": "2025年4月公開",
+      "parts": [
+        {
+          "label": "第1問（商業仕訳）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/2%E7%B4%9A_%E7%AC%AC1%E5%95%8F_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/2%E7%B4%9A_%E7%AC%AC1%E5%95%8F_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "クレジット売掛金（消費税）等仕訳5題"
+          ],
+          "unitIds": [
+            "L3-02",
+            "L2C-02"
+          ],
+          "note2027": "2027年以降も有効"
+        },
+        {
+          "label": "第2問（個別/連結論点）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/2%E7%B4%9A_%E7%AC%AC2%E5%95%8F_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/2%E7%B4%9A_%E7%AC%AC2%E5%95%8F_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "固定資産総合（取得・償却・除却/売却）"
+          ],
+          "unitIds": [
+            "L2C-04"
+          ],
+          "note2027": "2027年以降も重要"
+        },
+        {
+          "label": "第3問（F/S作成・本支店）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/2%E7%B4%9A_%E7%AC%AC3%E5%95%8F_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/2%E7%B4%9A_%E7%AC%AC3%E5%95%8F_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "本支店会計（合併F/S作成）"
+          ],
+          "unitIds": [
+            "L2C-11"
+          ],
+          "note2027": "本支店特有の未達・内部利益対策"
+        },
+        {
+          "label": "第4問(1)（工業仕訳）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/2%E7%B4%9A_%E7%AC%AC4%E5%95%8F%EF%BC%88%EF%BC%91%EF%BC%89_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/2%E7%B4%9A_%E7%AC%AC4%E5%95%8F%EF%BC%88%EF%BC%91%EF%BC%89_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "買入部品消費（先入先出/移動平均）ほか工業仕訳3題"
+          ],
+          "unitIds": [
+            "L2I-02"
+          ],
+          "note2027": "毎回12点の得点源"
+        },
+        {
+          "label": "第4問(2)（原価計算）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/2%E7%B4%9A_%E7%AC%AC4%E5%95%8F%EF%BC%88%EF%BC%92%EF%BC%89_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/2%E7%B4%9A_%E7%AC%AC4%E5%95%8F%EF%BC%88%EF%BC%92%EF%BC%89_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "個別原価計算・労務費（予定賃率・直接/間接/手待）"
+          ],
+          "unitIds": [
+            "L2I-02",
+            "L2I-04"
+          ],
+          "note2027": "2027年以降も重要"
+        },
+        {
+          "label": "第5問（CVP・標準/直接原価）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/2%E7%B4%9A_%E7%AC%AC5%E5%95%8F_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/2%E7%B4%9A_%E7%AC%AC5%E5%95%8F_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "製品別CVP・安全余裕率・貢献利益"
+          ],
+          "unitIds": [
+            "L2I-08"
+          ],
+          "note2027": "2027年以降も重要"
+        }
+      ]
+    },
+    {
+      "id": "L2-S3",
+      "title": "2級 公式サンプル問題 第3セット",
+      "released": "2025年3月公開",
+      "parts": [
+        {
+          "label": "第1問（商業仕訳）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_1_sample3_question.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_1_sample3_answer.pdf",
+          "topics": [
+            "その他有価証券配当・連結修正含む仕訳5題"
+          ],
+          "unitIds": [
+            "L2C-06",
+            "L2C-12"
+          ],
+          "note2027": "2027年以降も重要"
+        },
+        {
+          "label": "第2問（個別/連結論点）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/2%E7%B4%9A_%E7%AC%AC2%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB3_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/2%E7%B4%9A_%E7%AC%AC2%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB3_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "連結会計（70%子会社・支配獲得後）"
+          ],
+          "unitIds": [
+            "L2C-12"
+          ],
+          "note2027": "2級第2問の最重要山場"
+        },
+        {
+          "label": "第3問（F/S作成・本支店）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/02/2Q_3_sample3_question.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_3_sample3_answer.pdf",
+          "topics": [
+            "損益計算書（P/L）作成総合"
+          ],
+          "unitIds": [
+            "L3-10",
+            "L2C-02"
+          ],
+          "note2027": "2027年以降も重要"
+        },
+        {
+          "label": "第4問(1)（工業仕訳）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/2%E7%B4%9A_%E7%AC%AC4%E5%95%8F%EF%BC%881%EF%BC%89_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB3_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_41_sample3_answer.pdf",
+          "topics": [
+            "材料副費差異ほか工業仕訳3題"
+          ],
+          "unitIds": [
+            "L2I-02"
+          ],
+          "note2027": "毎回12点の得点源"
+        },
+        {
+          "label": "第4問(2)（原価計算）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_42_sample3_question.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_42_sample3_answer.pdf",
+          "topics": [
+            "実際個別原価計算・製造原価報告書作成"
+          ],
+          "unitIds": [
+            "L2I-04"
+          ],
+          "note2027": "2027年以降も重要"
+        },
+        {
+          "label": "第5問（CVP・標準/直接原価）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_5_sample3_question.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_5_sample3_answer.pdf",
+          "topics": [
+            "標準原価計算（製造間接費シュラッター図差異分析）"
+          ],
+          "unitIds": [
+            "L2I-03",
+            "L2I-07"
+          ],
+          "note2027": "型05・型06の直結問題"
+        }
+      ]
+    },
+    {
+      "id": "L2-S2",
+      "title": "2級 公式サンプル問題 第2セット",
+      "released": "2024年4月公開",
+      "parts": [
+        {
+          "label": "第1問（商業仕訳）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/2%E7%B4%9A_%E7%AC%AC1%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB2_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/2%E7%B4%9A_%E7%AC%AC1%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB2_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "創立費・開業費",
+            "仕訳5題"
+          ],
+          "unitIds": [
+            "L2C-09"
+          ],
+          "note2027": "2027年以降も有効"
+        },
+        {
+          "label": "第2問（個別/連結論点）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/2%E7%B4%9A_%E7%AC%AC2%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB2_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/2%E7%B4%9A_%E7%AC%AC2%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB2_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "税効果会計・P/L・B/S一部作成"
+          ],
+          "unitIds": [
+            "L2C-10"
+          ],
+          "note2027": "2027年以降も重要"
+        },
+        {
+          "label": "第3問（F/S作成・本支店）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/2%E7%B4%9A_%E7%AC%AC3%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB2_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/2%E7%B4%9A_%E7%AC%AC3%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB2_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "商標権償却・長期前払費用含むB/S作成"
+          ],
+          "unitIds": [
+            "L2C-04",
+            "L3-07"
+          ],
+          "note2027": "2027年以降も重要"
+        },
+        {
+          "label": "第4問(1)（工業仕訳）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_41_smaple2_question.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_41_smaple2_answer.pdf",
+          "topics": [
+            "原料消費価格差異ほか工業仕訳3題"
+          ],
+          "unitIds": [
+            "L2I-02"
+          ],
+          "note2027": "毎回12点の得点源"
+        },
+        {
+          "label": "第4問(2)（原価計算）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_42_sample2_question.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_42_sample2_answer.pdf",
+          "topics": [
+            "組別総合原価計算（加工費原料費基準配賦）"
+          ],
+          "unitIds": [
+            "L2I-06"
+          ],
+          "note2027": "2027年以降も重要"
+        },
+        {
+          "label": "第5問（CVP・標準/直接原価）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_5_sample2_question.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_5_sample2_answer.pdf",
+          "topics": [
+            "全部原価計算 vs 直接原価計算（固定費調整）"
+          ],
+          "unitIds": [
+            "L2I-08"
+          ],
+          "note2027": "第5問の超定番"
+        }
+      ]
+    },
+    {
+      "id": "L2-S1",
+      "title": "2級 公式サンプル問題 第1セット",
+      "released": "2024年4月公開",
+      "parts": [
+        {
+          "label": "第1問（商業仕訳）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/2%E7%B4%9A_%E7%AC%AC1%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB1_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/2%E7%B4%9A_%E7%AC%AC1%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB1_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "手形の不渡・償還請求",
+            "仕訳5題"
+          ],
+          "unitIds": [
+            "L3-04",
+            "L2C-01"
+          ],
+          "note2027": "※手形論点は2027年4月改定で廃止（電子記録債権へ読み替え）"
+        },
+        {
+          "label": "第2問（個別/連結論点）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/2%E7%B4%9A_%E7%AC%AC2%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB1_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/2%E7%B4%9A_%E7%AC%AC2%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB1_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "純資産・株主資本等変動計算書（S/S）"
+          ],
+          "unitIds": [
+            "L2C-09"
+          ],
+          "note2027": "頻出王道パターン"
+        },
+        {
+          "label": "第3問（F/S作成・本支店）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/2%E7%B4%9A_%E7%AC%AC3%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB1_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/2%E7%B4%9A_%E7%AC%AC3%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB1_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "決算整理後P/L・B/S作成総合"
+          ],
+          "unitIds": [
+            "L3-10",
+            "L2C-03",
+            "L2C-10"
+          ],
+          "note2027": "2027年以降も重要"
+        },
+        {
+          "label": "第4問(1)（工業仕訳）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/2%E7%B4%9A_%E7%AC%AC4%E5%95%8F%EF%BC%881%EF%BC%89_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB1_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_41_smaple1_answer.pdf",
+          "topics": [
+            "材料副費予定配賦・差異ほか工業仕訳3題"
+          ],
+          "unitIds": [
+            "L2I-02"
+          ],
+          "note2027": "毎回12点の得点源"
+        },
+        {
+          "label": "第4問(2)（原価計算）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_42_sample1_question.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_42_sample1_answer.pdf",
+          "topics": [
+            "標準原価計算（ボックス・差異分析）"
+          ],
+          "unitIds": [
+            "L2I-07"
+          ],
+          "note2027": "2027年以降も重要"
+        },
+        {
+          "label": "第5問（CVP・標準/直接原価）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_5_sample1_question.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/2Q_5_sample1_answer.pdf",
+          "topics": [
+            "次期利益計画（会話形式・CVP基礎）"
+          ],
+          "unitIds": [
+            "L2I-08"
+          ],
+          "note2027": "会話読解型CVPの典型"
+        }
+      ]
+    }
+  ],
+  "level3Samples": [
+    {
+      "id": "L3-S5",
+      "title": "3級 公式サンプル問題 第5セット",
+      "released": "2026年4月公開",
+      "parts": [
+        {
+          "label": "第1問（仕訳15問・45点）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/3%E7%B4%9A_%E7%AC%AC1%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/3%E7%B4%9A_%E7%AC%AC1%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "当座借越振戻ほか基本仕訳15題"
+          ],
+          "unitIds": [
+            "L3-02",
+            "L3-03"
+          ],
+          "note2027": "2027年最新サンプル"
+        },
+        {
+          "label": "第2問(1)（勘定記入・台帳）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/3%E7%B4%9A_%E7%AC%AC2%E5%95%8F%EF%BC%881%EF%BC%89_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/3%E7%B4%9A_%E7%AC%AC2%E5%95%8F%EF%BC%881%EF%BC%89_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "利息関連2勘定の空欄補充（月割・開始記入）"
+          ],
+          "unitIds": [
+            "L3-07"
+          ],
+          "note2027": "最新サンプル"
+        },
+        {
+          "label": "第2問(2)（補助簿・選択理論）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/3%E7%B4%9A_%E7%AC%AC2%E5%95%8F%EF%BC%882%EF%BC%89_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/3%E7%B4%9A_%E7%AC%AC2%E5%95%8F%EF%BC%882%EF%BC%89_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "固定資産台帳の空欄補充（月割償却）"
+          ],
+          "unitIds": [
+            "L3-06"
+          ],
+          "note2027": "最新サンプル"
+        },
+        {
+          "label": "第3問（決算整理・精算表/F/S・35点）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/3%E7%B4%9A_%E7%AC%AC3%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2026/04/3%E7%B4%9A_%E7%AC%AC3%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB5_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "決算整理後B/S・P/L作成（消費税税抜含む）"
+          ],
+          "unitIds": [
+            "L3-08",
+            "L3-10"
+          ],
+          "note2027": "最新サンプル"
+        }
+      ]
+    },
+    {
+      "id": "L3-S4",
+      "title": "3級 公式サンプル問題 第4セット",
+      "released": "2025年4月公開",
+      "parts": [
+        {
+          "label": "第1問（仕訳15問・45点）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/3%E7%B4%9A_%E7%AC%AC1%E5%95%8F_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/3%E7%B4%9A_%E7%AC%AC1%E5%95%8F_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "現金過不足二重記帳訂正ほか基本仕訳15題"
+          ],
+          "unitIds": [
+            "L3-02",
+            "L3-09"
+          ],
+          "note2027": "2027年以降も有効"
+        },
+        {
+          "label": "第2問(1)（勘定記入・台帳）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/3%E7%B4%9A_%E7%AC%AC2%E5%95%8F1_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/3%E7%B4%9A_%E7%AC%AC2%E5%95%8F1_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "三分法の仕入勘定・繰越商品勘定の空欄補充"
+          ],
+          "unitIds": [
+            "L3-03"
+          ],
+          "note2027": "2027年は売上原価対立法との対比も重要"
+        },
+        {
+          "label": "第2問(2)（補助簿・選択理論）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/3%E7%B4%9A_%E7%AC%AC2%E5%95%8F2_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/3%E7%B4%9A_%E7%AC%AC2%E5%95%8F2_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "貸倒引当金・会社法等の語句選択問題"
+          ],
+          "unitIds": [
+            "L3-05",
+            "L3-08"
+          ],
+          "note2027": "語句選択の対策"
+        },
+        {
+          "label": "第3問（決算整理・精算表/F/S・35点）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/3%E7%B4%9A_%E7%AC%AC3%E5%95%8F_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/04/3%E7%B4%9A_%E7%AC%AC3%E5%95%8F_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "決算整理後B/S・P/L作成（消費税税抜含む）"
+          ],
+          "unitIds": [
+            "L3-08",
+            "L3-10"
+          ],
+          "note2027": "2027年以降も有効"
+        }
+      ]
+    },
+    {
+      "id": "L3-S3",
+      "title": "3級 公式サンプル問題 第3セット",
+      "released": "2025年3月公開",
+      "parts": [
+        {
+          "label": "第1問（仕訳15問・45点）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/3Q_1_sample3_question.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/3%E7%B4%9A_%E7%AC%AC1%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB3_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "敷金返還・修繕費差引ほか基本仕訳15題"
+          ],
+          "unitIds": [
+            "L3-02",
+            "L3-04"
+          ],
+          "note2027": "2027年以降も有効"
+        },
+        {
+          "label": "第2問(1)（勘定記入・台帳）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/3Q_21_sample3_question.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/3Q_21_sample3_answer.pdf",
+          "topics": [
+            "支払家賃・前払家賃の勘定記入（6ヶ月前払）"
+          ],
+          "unitIds": [
+            "L3-07"
+          ],
+          "note2027": "頻出の経過勘定記入"
+        },
+        {
+          "label": "第2問(2)（補助簿・選択理論）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/3%E7%B4%9A_%E7%AC%AC2%E5%95%8F%EF%BC%882%EF%BC%89_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB3_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/3Q_22_sample3_answer.pdf",
+          "topics": [
+            "買掛金元帳・得意先/仕入先別勘定記入"
+          ],
+          "unitIds": [
+            "L3-09"
+          ],
+          "note2027": "人名勘定の理解"
+        },
+        {
+          "label": "第3問（決算整理・精算表/F/S・35点）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/3Q_3_sample3_question.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/3Q_3_sample3_answer.pdf",
+          "topics": [
+            "決算整理後B/S・P/L作成（消費税税抜含む）"
+          ],
+          "unitIds": [
+            "L3-08",
+            "L3-10"
+          ],
+          "note2027": "2027年以降も有効"
+        }
+      ]
+    },
+    {
+      "id": "L3-S2",
+      "title": "3級 公式サンプル問題 第2セット",
+      "released": "2024年4月公開",
+      "parts": [
+        {
+          "label": "第1問（仕訳15問・45点）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/3%E7%B4%9A_%E7%AC%AC1%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB2_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/3%E7%B4%9A_%E7%AC%AC1%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB2_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "手形借入金返済ほか基本仕訳15題"
+          ],
+          "unitIds": [
+            "L3-02",
+            "L3-04"
+          ],
+          "note2027": "※手形借入金は2027年4月改定で借入金へ"
+        },
+        {
+          "label": "第2問(1)（勘定記入・台帳）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/3Q_21_sample2_question.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/3Q_21_sample2_answer.pdf",
+          "topics": [
+            "固定資産台帳（定額法・期中取得月割）"
+          ],
+          "unitIds": [
+            "L3-06"
+          ],
+          "note2027": "2027年からは200%定率法・除却廃棄も要対策"
+        },
+        {
+          "label": "第2問(2)（補助簿・選択理論）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/3%E7%B4%9A_%E7%AC%AC2%E5%95%8F%EF%BC%882%EF%BC%89_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB2_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/3%E7%B4%9A_%E7%AC%AC2%E5%95%8F%EF%BC%882%EF%BC%89_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB2_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "補助簿選択問題（取引→記入対象補助簿の特定）"
+          ],
+          "unitIds": [
+            "L3-09"
+          ],
+          "note2027": "帳簿組織の王道"
+        },
+        {
+          "label": "第3問（決算整理・精算表/F/S・35点）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/3Q_3_sample2_question.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/3%E7%B4%9A_%E7%AC%AC3%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB2_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "8桁精算表の作成（未収・未払・貸倒・償却）"
+          ],
+          "unitIds": [
+            "L3-10"
+          ],
+          "note2027": "精算表の典型"
+        }
+      ]
+    },
+    {
+      "id": "L3-S1",
+      "title": "3級 公式サンプル問題 第1セット",
+      "released": "2024年4月公開",
+      "parts": [
+        {
+          "label": "第1問（仕訳15問・45点）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/3%E7%B4%9A_%E7%AC%AC1%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB1_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/3%E7%B4%9A_%E7%AC%AC1%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB1_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "給料源泉徴収・社会保険料ほか基本仕訳15題"
+          ],
+          "unitIds": [
+            "L3-04",
+            "L3-08"
+          ],
+          "note2027": "※紙小切手/手形があれば電子決済へ読み替え"
+        },
+        {
+          "label": "第2問(1)（勘定記入・台帳）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/3Q_21_sample1_question.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2025/03/3Q_21_sample1_answer.pdf",
+          "topics": [
+            "3勘定空欄補充（経過勘定・期首再振替含む）"
+          ],
+          "unitIds": [
+            "L3-07"
+          ],
+          "note2027": "型01タイムラインで確実得点"
+        },
+        {
+          "label": "第2問(2)（補助簿・選択理論）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/3%E7%B4%9A_%E7%AC%AC2%E5%95%8F%EF%BC%882%EF%BC%89_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB1_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/3%E7%B4%9A_%E7%AC%AC2%E5%95%8F%EF%BC%882%EF%BC%89_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB1_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "商品有高帳（移動平均法）と売上総利益算定"
+          ],
+          "unitIds": [
+            "L3-03",
+            "L3-09"
+          ],
+          "note2027": "3級第2問の超定番"
+        },
+        {
+          "label": "第3問（決算整理・精算表/F/S・35点）",
+          "questionPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/3%E7%B4%9A_%E7%AC%AC3%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB1_%E5%95%8F%E9%A1%8C.pdf",
+          "answerPdfUrl": "https://www.kentei.ne.jp/wp/wp-content/uploads/2024/04/3%E7%B4%9A_%E7%AC%AC3%E5%95%8F_%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB1_%E7%AD%94%E6%A1%88.pdf",
+          "topics": [
+            "決算整理後B/S・P/L作成（消費税税抜含む）"
+          ],
+          "unitIds": [
+            "L3-08",
+            "L3-10"
+          ],
+          "note2027": "35点配点の勝負問題"
+        }
+      ]
+    }
+  ],
+  "topicFrequency": {
+    "commercialAccounting": [
+      {
+        "topic": "収益認識（第29号：返品権付・割戻・履行義務配分・工事・割賦）",
+        "count": 9,
+        "recentExams": [
+          174,
+          170,
+          168,
+          167,
+          165,
+          164,
+          162,
+          161
+        ],
+        "unitIds": [
+          "L1C-05"
+        ]
+      },
+      {
+        "topic": "連結会計・企業結合（開始仕訳・孫会社・持分変動・包括利益・S/S）",
+        "count": 9,
+        "recentExams": [
+          173,
+          171,
+          168,
+          167,
+          165,
+          164,
+          158
+        ],
+        "unitIds": [
+          "L1C-13",
+          "L1C-14",
+          "L1C-15"
+        ]
+      },
+      {
+        "topic": "金融商品（有価証券・社債償却原価・CF見積法・為替予約・ヘッジ）",
+        "count": 9,
+        "recentExams": [
+          174,
+          170,
+          168,
+          167,
+          165,
+          162,
+          161,
+          158
+        ],
+        "unitIds": [
+          "L1C-02",
+          "L1C-03",
+          "L1C-04"
+        ]
+      },
+      {
+        "topic": "税効果会計（個別・連結時価評価DTL・資産負債法/繰延法・圧縮記帳）",
+        "count": 7,
+        "recentExams": [
+          174,
+          173,
+          171,
+          168,
+          165,
+          161
+        ],
+        "unitIds": [
+          "L1C-11"
+        ]
+      },
+      {
+        "topic": "固定資産（減損・のれん配分・ARO・ソフトウェア・改定償却・圧縮記帳）",
+        "count": 8,
+        "recentExams": [
+          174,
+          171,
+          170,
+          168,
+          167,
+          165,
+          162,
+          161
+        ],
+        "unitIds": [
+          "L1C-06",
+          "L1C-07"
+        ]
+      },
+      {
+        "topic": "純資産・株主資本（新株予約権・自己株式・SO・分配可能額・EPS）",
+        "count": 6,
+        "recentExams": [
+          174,
+          173,
+          171,
+          170,
+          167,
+          162
+        ],
+        "unitIds": [
+          "L1C-10",
+          "L1C-15"
+        ]
+      },
+      {
+        "topic": "退職給付・外貨換算・C/F計算書・遡及修正",
+        "count": 7,
+        "recentExams": [
+          174,
+          171,
+          167,
+          165,
+          161,
+          159,
+          158
+        ],
+        "unitIds": [
+          "L1C-01",
+          "L1C-09",
+          "L1C-12",
+          "L1C-14"
+        ]
+      }
+    ],
+    "industrialCosting": [
+      {
+        "topic": "標準原価計算（配合/歩留・部門別責任・ロット別・パーシャル/シングル・限界）",
+        "count": 7,
+        "recentExams": [
+          174,
+          173,
+          170,
+          165,
+          161,
+          159
+        ],
+        "unitIds": [
+          "L1I-04"
+        ]
+      },
+      {
+        "topic": "意思決定・設備投資（差額原価収益・準固定費・制約条件・取替NPV/IRR）",
+        "count": 6,
+        "recentExams": [
+          174,
+          173,
+          171,
+          170,
+          168,
+          165
+        ],
+        "unitIds": [
+          "L1I-09",
+          "L1I-10"
+        ]
+      },
+      {
+        "topic": "部門別・費目別・ABC・総合原価（連立方程式・非度外視/仕損・組別）",
+        "count": 7,
+        "recentExams": [
+          171,
+          168,
+          167,
+          164,
+          162,
+          159,
+          158
+        ],
+        "unitIds": [
+          "L1I-01",
+          "L1I-02",
+          "L1I-08"
+        ]
+      },
+      {
+        "topic": "CVP・直接原価・予算管理・業績評価（ROI/RI・内部振替価格・LP）",
+        "count": 7,
+        "recentExams": [
+          174,
+          173,
+          170,
+          168,
+          167,
+          161,
+          158
+        ],
+        "unitIds": [
+          "L1I-05",
+          "L1I-06",
+          "L1I-07"
+        ]
+      }
+    ]
+  }
+}

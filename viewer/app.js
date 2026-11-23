@@ -22,6 +22,7 @@
           reviews: {},
           notes: {},
           srs: {},
+          pastExamDone: {},
           pinnedCheats: [],
           theme: "light",
           focusCore: false,
@@ -29,7 +30,7 @@
         }, parsed);
       }
     } catch (e) {}
-    return { checks: {}, reviews: {}, notes: {}, srs: {}, pinnedCheats: [], theme: "light", focusCore: false, lastDocId: "G-00" };
+    return { checks: {}, reviews: {}, notes: {}, srs: {}, pastExamDone: {}, pinnedCheats: [], theme: "light", focusCore: false, lastDocId: "G-00" };
   }
 
   function saveState() {
@@ -314,7 +315,7 @@
       };
     }
 
-    // 3. Add flashcard mask toolbars to journal tables
+    // 3. Add flashcard mask toolbars & semantic mobile card tags to journal tables
     body.querySelectorAll("table.journal-table").forEach((tbl) => {
       const wrap = tbl.closest(".table-wrap");
       const headers = Array.from(tbl.querySelectorAll("thead th")).map((th) => th.textContent.trim());
@@ -322,6 +323,28 @@
       const dAmtIdx = headers.indexOf("借方金額");
       const cSubIdx = headers.indexOf("貸方科目");
       const cAmtIdx = headers.indexOf("貸方金額");
+
+      if (dSubIdx >= 0 && dAmtIdx >= 0 && cSubIdx >= 0 && cAmtIdx >= 0) {
+        tbl.classList.add("jt-has-cards");
+        const minAccountIdx = Math.min(dSubIdx, cSubIdx);
+        tbl.querySelectorAll("tbody tr").forEach((tr) => {
+          const cells = Array.from(tr.querySelectorAll("td"));
+          const rowText = cells.map((c) => c.textContent.trim()).join(" ");
+          if (/^(合計|計)\b|合計/.test(cells[0]?.textContent.trim() || "") || rowText.includes("合計")) {
+            tr.classList.add("jt-total-row");
+          }
+          cells.forEach((td, idx) => {
+            const lbl = headers[idx] || "";
+            if (lbl) td.setAttribute("data-col-label", lbl);
+            if (idx === dSubIdx) td.classList.add("jt-dsub");
+            else if (idx === dAmtIdx) td.classList.add("jt-damt");
+            else if (idx === cSubIdx) td.classList.add("jt-csub");
+            else if (idx === cAmtIdx) td.classList.add("jt-camt");
+            else if (idx < minAccountIdx) td.classList.add("jt-meta");
+            else td.classList.add("jt-extra");
+          });
+        });
+      }
 
       const bar = document.createElement("div");
       bar.className = "journal-toolbar";
@@ -426,9 +449,18 @@
     return arr.filter(Boolean).length >= chkMatches.length;
   }
 
+  function syncMobileTocButtonVisibility() {
+    const tocBtn = document.getElementById("mobileTocBtn");
+    if (!tocBtn) return;
+    const hasLinks = (document.getElementById("mobileTocNav")?.children.length || 0) > 0;
+    tocBtn.classList.toggle("hidden", studioMode !== "reader" || !hasLinks);
+  }
+
   function renderTOC() {
     const toc = document.getElementById("tocNav");
+    const mobileToc = document.getElementById("mobileTocNav");
     toc.innerHTML = "";
+    if (mobileToc) mobileToc.innerHTML = "";
     const headings = Array.from(document.querySelectorAll("#articleBody h2, #articleBody h3"));
     headings.forEach((h, idx) => {
       if (h.closest(".solution-card") && h.nodeName === "H3") return;
@@ -444,7 +476,21 @@
         h.scrollIntoView({ behavior: "smooth", block: "start" });
       });
       toc.appendChild(a);
+
+      if (mobileToc) {
+        const ma = document.createElement("a");
+        ma.className = "mobile-toc-link" + (h.nodeName === "H3" ? " is-sub" : "");
+        ma.href = "#" + id;
+        ma.textContent = h.textContent;
+        ma.addEventListener("click", (e) => {
+          e.preventDefault();
+          closeAllOverlays();
+          h.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        mobileToc.appendChild(ma);
+      }
     });
+    syncMobileTocButtonVisibility();
   }
 
   function renderSidebar() {
@@ -506,6 +552,34 @@
     document.getElementById("masteredBar").style.width = pct + "%";
   }
 
+  function markScrollableContainers() {
+    requestAnimationFrame(() => {
+      document.querySelectorAll(".table-wrap, .cheat-table-wrap, .ascii-diagram, .concept-svg-card, .math-block").forEach((el) => {
+        if (el.offsetParent === null) return;
+        const canScroll = el.scrollWidth > el.clientWidth + 4;
+        el.dataset.scrollable = canScroll ? "true" : "false";
+      });
+    });
+  }
+
+  let readingProgressRaf = null;
+  function updateReadingProgress() {
+    if (readingProgressRaf) return;
+    readingProgressRaf = requestAnimationFrame(() => {
+      readingProgressRaf = null;
+      const bar = document.getElementById("readingProgressBar");
+      if (!bar) return;
+      if (studioMode !== "reader") {
+        bar.style.width = "0%";
+        return;
+      }
+      const docEl = document.documentElement;
+      const maxScroll = Math.max(0, docEl.scrollHeight - window.innerHeight);
+      const pct = maxScroll > 0 ? Math.min(100, Math.max(0, (window.scrollY / maxScroll) * 100)) : 0;
+      bar.style.width = pct.toFixed(1) + "%";
+    });
+  }
+
   function renderOptionalRichMedia() {
     if (typeof mermaid !== "undefined") {
       try {
@@ -527,6 +601,7 @@
         } catch (e) {}
       });
     }
+    markScrollableContainers();
   }
 
   const MODE_SHORT_LABELS = {
@@ -568,19 +643,26 @@
     const mBtn = document.getElementById("mobileMenuBtn");
     const menu = document.getElementById("toolsMenu");
     const tBtn = document.getElementById("toolsMenuBtn");
+    const tocSheet = document.getElementById("mobileTocSheet");
+    const tocBtn = document.getElementById("mobileTocBtn");
     if (sb) sb.classList.remove("open");
     if (mBtn) mBtn.setAttribute("aria-expanded", "false");
     if (menu) menu.classList.add("hidden");
     if (tBtn) tBtn.setAttribute("aria-expanded", "false");
+    if (tocSheet) tocSheet.classList.add("hidden");
+    if (tocBtn) tocBtn.setAttribute("aria-expanded", "false");
+    document.querySelectorAll(".floating-panel").forEach((p) => p.classList.add("hidden"));
     syncBackdrop();
   }
 
   function syncBackdrop() {
     const sbOpen = document.getElementById("sidebar")?.classList.contains("open");
     const toolsOpen = !document.getElementById("toolsMenu")?.classList.contains("hidden");
+    const tocOpen = !document.getElementById("mobileTocSheet")?.classList.contains("hidden");
+    const panelOpen = Array.from(document.querySelectorAll(".floating-panel")).some((p) => !p.classList.contains("hidden"));
     const bd = document.getElementById("sidebarBackdrop");
     const isMobile = window.matchMedia("(max-width: 820px)").matches;
-    const show = sbOpen || (isMobile && toolsOpen);
+    const show = sbOpen || (isMobile && (toolsOpen || tocOpen || panelOpen));
     if (bd) bd.classList.toggle("hidden", !show);
     document.body.classList.toggle("drawer-open", !!show);
   }
@@ -604,11 +686,14 @@
     });
     document.body.classList.toggle("wide-studio-mode", studioMode !== "reader");
     updateMobileContext(studioMode);
+    syncMobileTocButtonVisibility();
     closeAllOverlays();
     if (window.BokiStudioTools && typeof window.BokiStudioTools.onModeChange === "function") {
       window.BokiStudioTools.onModeChange(studioMode);
     }
+    markScrollableContainers();
     window.scrollTo({ top: 0, behavior: "instant" });
+    updateReadingProgress();
   }
 
   function injectConceptSvg(bodyEl, docId) {
@@ -829,6 +914,18 @@
     const bd = document.getElementById("sidebarBackdrop");
     if (bd) bd.onclick = closeAllOverlays;
 
+    const mobileTocBtn = document.getElementById("mobileTocBtn");
+    const mobileTocSheet = document.getElementById("mobileTocSheet");
+    if (mobileTocBtn && mobileTocSheet) {
+      mobileTocBtn.onclick = () => {
+        const willOpen = mobileTocSheet.classList.contains("hidden");
+        closeAllOverlays();
+        mobileTocSheet.classList.toggle("hidden", !willOpen);
+        mobileTocBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+        syncBackdrop();
+      };
+    }
+
     const toolsBtn = document.getElementById("toolsMenuBtn");
     const toolsMenu = document.getElementById("toolsMenu");
     if (toolsBtn && toolsMenu) {
@@ -899,16 +996,26 @@
       closeToolsMenu();
       document.getElementById("scratchPanel")?.classList.add("hidden");
       document.getElementById("syncPanel")?.classList.add("hidden");
+      document.getElementById("mobileTocSheet")?.classList.add("hidden");
       document.getElementById("timerPanel").classList.toggle("hidden");
+      syncBackdrop();
     };
     document.getElementById("scratchToggleBtn").onclick = () => {
       closeToolsMenu();
       document.getElementById("timerPanel")?.classList.add("hidden");
       document.getElementById("syncPanel")?.classList.add("hidden");
+      document.getElementById("mobileTocSheet")?.classList.add("hidden");
       document.getElementById("scratchPanel").classList.toggle("hidden");
+      syncBackdrop();
     };
     document.querySelectorAll(".panel-close").forEach((btn) => {
-      btn.onclick = () => document.getElementById(btn.dataset.close).classList.add("hidden");
+      btn.onclick = () => {
+        document.getElementById(btn.dataset.close)?.classList.add("hidden");
+        if (btn.dataset.close === "mobileTocSheet") {
+          document.getElementById("mobileTocBtn")?.setAttribute("aria-expanded", "false");
+        }
+        syncBackdrop();
+      };
     });
 
     document.getElementById("reviewTracker").querySelectorAll(".day-btn").forEach((btn) => {
@@ -1012,6 +1119,7 @@
         const ta = document.getElementById("syncCodeTextarea");
         const msg = document.getElementById("syncStatusMsg");
         if (panel) panel.classList.toggle("hidden");
+        syncBackdrop();
         if (ta && !panel.classList.contains("hidden")) {
           const bytes = new TextEncoder().encode(JSON.stringify(state));
           let bin = "";
@@ -1077,6 +1185,9 @@
     const initialHash = window.location.hash.replace(/^#/, "");
     openDoc(initialHash || state.lastDocId || "G-00", false);
 
+    window.addEventListener("scroll", updateReadingProgress, { passive: true });
+    window.addEventListener("resize", markScrollableContainers, { passive: true });
+
     window.BokiStudio = {
       DATA,
       state,
@@ -1085,6 +1196,7 @@
       switchStudioMode,
       isDocMastered,
       updateProgress,
+      markScrollableContainers,
       escapeHtml,
       getStudioMode: () => studioMode
     };

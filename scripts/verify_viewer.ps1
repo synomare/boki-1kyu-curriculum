@@ -74,6 +74,9 @@ if (Test-Path $dataPath) {
                 $tc = if ($null -eq $parsed.theoryDrills) { 0 } else { $parsed.theoryDrills.Count }
                 $errors.Add("Expected at least 100 theoryDrills, found $tc")
             }
+            if ($null -eq $parsed.pastExams -or $parsed.pastExams.level1Exams.Count -lt 12 -or $parsed.pastExams.level2Samples.Count -lt 5 -or $parsed.pastExams.level3Samples.Count -lt 5) {
+                $errors.Add("pastExams missing required level1Exams (12), level2Samples (5), or level3Samples (5)")
+            }
         } catch {
             $errors.Add("Failed to parse JSON inside curriculum_data.js: $_")
         }
