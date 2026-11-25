@@ -3176,3 +3176,137 @@ body.focus-core-mode .hook-card .focus-note { display: block; }
     right: 6px;
   }
 }
+
+/* =========================================================================
+ * 10. PROBLEM-UNIT 2-PANE EXAM SHEET & MULTI-SLOT STYLES (v8)
+ * ========================================================================= */
+.problem-exam-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+@media (min-width: 1080px) {
+  .problem-exam-grid {
+    grid-template-columns: minmax(320px, 0.92fr) minmax(0, 1.35fr);
+    gap: 18px;
+    align-items: start;
+  }
+  .problem-stem-pane {
+    position: sticky;
+    top: 68px;
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+  }
+}
+
+.problem-stem-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.problem-stem-box {
+  margin: 0;
+}
+.problem-stem-box.is-collapsed {
+  display: none;
+}
+
+.problem-stem-body {
+  max-height: none;
+}
+
+.dq-line.dq-active-slot {
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  padding-left: 8px;
+  font-weight: 600;
+}
+
+.problem-sticky-tools {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+.problem-sticky-tools .subject-palette-wrap {
+  margin-bottom: 8px;
+}
+
+.entry-slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.entry-slot-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.entry-slot-card.is-active-slot {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.entry-slot-card.is-slot-perfect {
+  border-left: 4px solid var(--emerald);
+}
+.entry-slot-card.is-slot-partial {
+  border-left: 4px solid var(--amber);
+}
+.entry-slot-card.is-slot-wrong {
+  border-left: 4px solid var(--danger);
+}
+
+.entry-slot-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.entry-slot-title-wrap {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+.entry-slot-focus {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.45;
+}
+.entry-slot-footer {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 6px;
+}
+.slot-feedback-box {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-strong);
+}
+
+@media (max-width: 820px) {
+  .problem-stem-pane {
+    position: static;
+    max-height: none;
+  }
+  .entry-slot-card {
+    padding: 10px;
+  }
+  .slot-add-row-btn {
+    min-height: 40px;
+  }
+}

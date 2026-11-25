@@ -22,7 +22,9 @@
     isCardLeech,
     getUnitReviewStatus,
     getDueSummary,
-    toggleDocReviewStage
+    toggleDocReviewStage,
+    getJournalProblems,
+    getProblemIdForDrillCard
   } = studio;
   if (!state.srs) state.srs = {};
   if (!state.mistakes) state.mistakes = {};
@@ -580,25 +582,27 @@
     dojoTab: "journal", // "today" | "journal" | "calc" | "theory" | "cbt" | "past"
     mode: state.prefs.drillMode || "input", // "input" | "subject" | "flash"
     mobileFiltersOpen: false,
+    stemCollapsed: false,
     part: "all",
     queueMode: "all", // "all" | "due" | "unmastered" | "leech"
-    sessionLimit: typeof state.prefs.sessionLimit === "number" ? state.prefs.sessionLimit : 10,
+    sessionLimit: typeof state.prefs.sessionLimit === "number" ? state.prefs.sessionLimit : 5,
     docFilter: "",
     deck: [],
     idx: 0,
     revealStep: 0, // flash mode: 0 hidden, 1 subjects, 2 full
-    inputRows: [{ dSub: "", dAmt: "", cSub: "", cAmt: "" }],
+    slotRows: [[{ dSub: "", dAmt: "", cSub: "", cAmt: "" }]],
+    activeSlot: 0,
     insertTarget: "dSub",
-    lastFocusedCell: { row: 0, field: "dSub" },
-    lastFocusedAmtCell: { row: 0, field: "dAmt" },
+    lastFocusedCell: { slot: 0, row: 0, field: "dSub" },
+    lastFocusedAmtCell: { slot: 0, row: 0, field: "dAmt" },
     hintLevel: 0,
-    gradeResult: null,
+    gradeResult: null, // null | { allOk, okCount, totalSlots, slotResults: [...], hasAnyInput }
     autoAppliedQuality: null,
     cardStartedAt: Date.now(),
     sessionLog: [],
     sessionSummary: null,
     blitzActive: false,
-    blitzTotal: 10,
+    blitzTotal: 5,
     blitzCount: 0,
     blitzScore: 0,
     blitzSec: 0,
@@ -617,11 +621,12 @@
     runnerJournalMode: state.prefs.drillMode || "input",
     runnerTheoryMode: "choice",
     cardStartedAt: Date.now(),
-    // per-card transient state in mixed runner
-    jRows: [{ dSub: "", dAmt: "", cSub: "", cAmt: "" }],
+    jSlotRows: [[{ dSub: "", dAmt: "", cSub: "", cAmt: "" }]],
+    jActiveSlot: 0,
+    jStemCollapsed: false,
     jInsertTarget: "dSub",
-    jFocusedCell: { row: 0, field: "dSub" },
-    jFocusedAmt: { row: 0, field: "dAmt" },
+    jFocusedCell: { slot: 0, row: 0, field: "dSub" },
+    jFocusedAmt: { slot: 0, row: 0, field: "dAmt" },
     jHintLevel: 0,
     jRevealStep: 0,
     jGrade: null,
@@ -636,22 +641,32 @@
     tAutoQ: null
   };
 
-  function resetInputForCard() {
-    drillState.inputRows = [{ dSub: "", dAmt: "", cSub: "", cAmt: "" }];
+  function createEmptySlotRows(problem) {
+    const entries = (problem && problem.entries) || [{ rows: [] }];
+    return entries.map(() => [{ dSub: "", dAmt: "", cSub: "", cAmt: "" }]);
+  }
+
+  function resetInputForCard(problem) {
+    drillState.slotRows = createEmptySlotRows(problem || drillState.deck[drillState.idx]);
+    drillState.activeSlot = 0;
+    drillState.stemCollapsed = false;
     drillState.insertTarget = "dSub";
-    drillState.lastFocusedCell = { row: 0, field: "dSub" };
-    drillState.lastFocusedAmtCell = { row: 0, field: "dAmt" };
+    drillState.lastFocusedCell = { slot: 0, row: 0, field: "dSub" };
+    drillState.lastFocusedAmtCell = { slot: 0, row: 0, field: "dAmt" };
     drillState.hintLevel = 0;
     drillState.gradeResult = null;
     drillState.autoAppliedQuality = null;
     drillState.cardStartedAt = Date.now();
   }
 
-  function resetRunnerTransient() {
-    todayState.jRows = [{ dSub: "", dAmt: "", cSub: "", cAmt: "" }];
+  function resetRunnerTransient(item) {
+    const jProb = item && item.kind === "journal" ? item.card : null;
+    todayState.jSlotRows = createEmptySlotRows(jProb);
+    todayState.jActiveSlot = 0;
+    todayState.jStemCollapsed = false;
     todayState.jInsertTarget = "dSub";
-    todayState.jFocusedCell = { row: 0, field: "dSub" };
-    todayState.jFocusedAmt = { row: 0, field: "dAmt" };
+    todayState.jFocusedCell = { slot: 0, row: 0, field: "dSub" };
+    todayState.jFocusedAmt = { slot: 0, row: 0, field: "dAmt" };
     todayState.jHintLevel = 0;
     todayState.jRevealStep = 0;
     todayState.jGrade = null;
@@ -668,7 +683,7 @@
   }
 
   function renderDojoTabBar() {
-    const jCnt = (DATA.drills || []).length;
+    const jCnt = getJournalProblems().length;
     const cCnt = (DATA.calcDrills || []).length;
     const tCnt = (DATA.theoryDrills || []).length;
     const dueSum = getDueSummary();
@@ -704,7 +719,7 @@
   }
 
   function build7DayForecastSvg() {
-    const allCards = [].concat(DATA.drills || [], DATA.calcDrills || [], DATA.theoryDrills || []);
+    const allCards = [].concat(getJournalProblems(), DATA.calcDrills || [], DATA.theoryDrills || []);
     const now = new Date();
     now.setHours(0, 0, 0, 0);
     const days = [];
@@ -744,7 +759,8 @@
   }
 
   function findCardById(cardId) {
-    let found = (DATA.drills || []).find((c) => c.id === cardId);
+    const probId = getProblemIdForDrillCard(cardId);
+    let found = getJournalProblems().find((p) => p.id === probId || p.id === cardId);
     if (found) return { kind: "journal", card: found };
     found = (DATA.calcDrills || []).find((c) => c.id === cardId);
     if (found) return { kind: "calc", card: found };
@@ -759,7 +775,7 @@
     todayState.runnerLog = [];
     todayState.runnerSummary = null;
     todayState.runnerActive = items.length > 0;
-    resetRunnerTransient();
+    resetRunnerTransient(todayState.runnerDeck[0]);
     renderDrillView();
   }
 
@@ -876,7 +892,7 @@
     } else {
       // Mistake Notebook
       const allCards = [].concat(
-        (DATA.drills || []).map((c) => ({ kind: "journal", label: "仕訳", card: c })),
+        getJournalProblems().map((p) => ({ kind: "journal", label: "仕訳", card: p })),
         (DATA.calcDrills || []).map((c) => ({ kind: "calc", label: "工簿", card: c })),
         (DATA.theoryDrills || []).map((c) => ({ kind: "theory", label: "理論", card: c }))
       );
@@ -916,7 +932,9 @@
           const c = en.card;
           const m = state.mistakes[c.id] || { reasons: [], note: "", count: 0 };
           const srs = state.srs[c.id];
-          const titleTxt = en.kind === "journal" ? (c.focusLine || c.targetLabel || c.docTitle) : en.kind === "calc" ? c.question : c.title;
+          const titleTxt = en.kind === "journal"
+            ? (c.isMulti ? (c.questionTitle + "（全" + c.entryCount + "仕訳）— " + c.docTitle) : (c.entries[0].focusLine || c.entries[0].targetLabel || c.docTitle))
+            : en.kind === "calc" ? c.question : c.title;
           html +=
             '<div class="list-action-row mistake-entry-row">' +
             '<div style="min-width:0; flex:1;">' +
@@ -978,7 +996,7 @@
       if (trAllBtn) {
         trAllBtn.onclick = () => {
           const allCards = [].concat(
-            (DATA.drills || []).map((c) => ({ kind: "journal", card: c })),
+            getJournalProblems().map((p) => ({ kind: "journal", card: p })),
             (DATA.calcDrills || []).map((c) => ({ kind: "calc", card: c })),
             (DATA.theoryDrills || []).map((c) => ({ kind: "theory", card: c }))
           );
@@ -1020,7 +1038,7 @@
         todayState.runnerSummary = true;
       } else {
         todayState.runnerIdx++;
-        resetRunnerTransient();
+        resetRunnerTransient(todayState.runnerDeck[todayState.runnerIdx]);
       }
       renderDrillView();
     };
@@ -1035,16 +1053,20 @@
 
     const card = item.card;
     if (item.kind === "journal") {
-      html += renderJournalCardShellHtml(card, {
+      html += renderJournalProblemShellHtml(card, {
         mode: todayState.runnerJournalMode,
-        rows: todayState.jRows,
+        slotRows: todayState.jSlotRows,
+        activeSlot: todayState.jActiveSlot,
+        stemCollapsed: todayState.jStemCollapsed,
         insertTarget: todayState.jInsertTarget,
+        focusedCell: todayState.jFocusedCell,
         hintLevel: todayState.jHintLevel,
         revealStep: todayState.jRevealStep,
         gradeResult: todayState.jGrade,
         autoAppliedQuality: todayState.jAutoQ,
         counterText: (todayState.runnerIdx + 1) + " / " + todayState.runnerDeck.length,
-        prefix: "mix"
+        showSubmodeSwitch: true,
+        hideNavBtns: true
       });
     } else if (item.kind === "calc") {
       html += renderCalcCardShellHtml(card, {
@@ -1077,11 +1099,15 @@
     };
 
     if (item.kind === "journal") {
-      bindJournalCardShell(root, card, {
+      bindJournalProblemShell(root, card, {
         getMode: () => todayState.runnerJournalMode,
         setMode: (m) => { todayState.runnerJournalMode = m; renderDrillView(); },
-        getRows: () => todayState.jRows,
-        setRows: (r) => { todayState.jRows = r; },
+        getSlotRows: () => todayState.jSlotRows,
+        setSlotRows: (r) => { todayState.jSlotRows = r; },
+        getActiveSlot: () => todayState.jActiveSlot,
+        setActiveSlot: (s) => { todayState.jActiveSlot = s; },
+        getStemCollapsed: () => todayState.jStemCollapsed,
+        setStemCollapsed: (v) => { todayState.jStemCollapsed = v; renderDrillView(); },
         getInsertTarget: () => todayState.jInsertTarget,
         setInsertTarget: (t) => { todayState.jInsertTarget = t; },
         getFocusedCell: () => todayState.jFocusedCell,
@@ -1137,23 +1163,25 @@
   }
 
   /* =========================================================================
-   * 1A. JOURNAL DRILL DOJO v3 (仕訳道場：本質思考 × 最速入力)
+   * 1A. JOURNAL DRILL DOJO v4 (大問単位・本番2ペイン解答シート)
    * ========================================================================= */
-  function buildSubjectPalette(card) {
+  function buildSubjectPaletteForProblem(problem) {
     const correctSet = new Set();
-    (card.rows || []).forEach((r) => {
-      if (r.dSub) correctSet.add(r.dSub);
-      if (r.cSub) correctSet.add(r.cSub);
+    (problem.entries || []).forEach((en) => {
+      (en.rows || []).forEach((r) => {
+        if (r.dSub) correctSet.add(r.dSub);
+        if (r.cSub) correctSet.add(r.cSub);
+      });
     });
     const docPool = new Set();
     const partPool = new Set();
     (DATA.drills || []).forEach((c) => {
-      if (c.docId === card.docId) {
+      if (c.docId === problem.docId) {
         (c.rows || []).forEach((r) => {
           if (r.dSub) docPool.add(r.dSub);
           if (r.cSub) docPool.add(r.cSub);
         });
-      } else if (c.part === card.part) {
+      } else if (c.part === problem.part) {
         (c.rows || []).forEach((r) => {
           if (r.dSub) partPool.add(r.dSub);
           if (r.cSub) partPool.add(r.cSub);
@@ -1163,7 +1191,7 @@
     const docDistractors = Array.from(docPool).filter((s) => !correctSet.has(s));
     const partDistractors = Array.from(partPool).filter((s) => !correctSet.has(s) && !docPool.has(s));
     let seed = 0;
-    for (let i = 0; i < card.id.length; i++) seed = (seed * 31 + card.id.charCodeAt(i)) >>> 0;
+    for (let i = 0; i < problem.id.length; i++) seed = (seed * 31 + problem.id.charCodeAt(i)) >>> 0;
     const seededRand = () => {
       seed = (seed * 1664525 + 1013904223) >>> 0;
       return seed / 4294967296;
@@ -1178,256 +1206,49 @@
     shuffleArr(docDistractors);
     shuffleArr(partDistractors);
     const distractors = docDistractors.concat(partDistractors);
-    const targetLen = Math.min(10, Math.max(6, correctSet.size + 4));
+    const targetLen = Math.min(12, Math.max(6, correctSet.size + 4));
     const combined = Array.from(correctSet).concat(distractors.slice(0, Math.max(0, targetLen - correctSet.size)));
     return shuffleArr(combined);
   }
 
-  function renderJournalCardShellHtml(card, ctx) {
-    const mode = ctx.mode; // "input" | "subject" | "flash"
-    const rows = ctx.rows;
-    const srsRec = state.srs[card.id];
-    const srsBadge = !srsRec
-      ? '<span class="meta-pill">未学習</span>'
-      : isCardLeech(card.id)
-      ? '<span class="meta-pill danger-pill">要復習</span>'
-      : isCardDue(card.id)
-      ? '<span class="meta-pill amber">復習期限</span>'
-      : srsRec.level >= 2
-      ? '<span class="meta-pill emerald-pill">定着 (' + (srsRec.intervalDays || 1) + "日)</span>"
-      : '<span class="meta-pill amber">あいまい</span>';
-
-    let html = '<div class="studio-card drill-card">';
-    html +=
-      '<div class="drill-card-meta">' +
-      '<div class="drill-card-tags"><span class="meta-pill accent">' + escapeHtml(card.docId) + "</span> " +
-      '<span class="meta-pill">' + escapeHtml(card.questionTitle || card.section) + "</span> " +
-      srsBadge + "</div>" +
-      '<div class="drill-counter">' + escapeHtml(ctx.counterText) + "</div></div>";
-
-    html += '<div class="drill-doc-title">' + escapeHtml(card.docTitle) + "</div>";
-
-    if (ctx.showSubmodeSwitch) {
-      html += '<div class="drill-submode-tabs" style="margin-bottom:10px;">';
-      [
-        { id: "input", label: "入力・自動採点" },
-        { id: "subject", label: "科目スピード" },
-        { id: "flash", label: "フラッシュカード" }
-      ].forEach((m) => {
-        html += '<button type="button" class="sim-tab-btn shell-jmode-btn' + (mode === m.id ? " active" : "") + '" data-jmode="' + m.id + '">' + m.label + "</button>";
+  function formatFiveElementHintForProblem(problem) {
+    const doc = (DATA.items || []).find((it) => it.id === problem.docId);
+    const fmtStr = doc && doc.formats && doc.formats.length ? doc.formats.join(" / ") : "仕訳思考";
+    const lines = (problem.entries || []).map((en) => {
+      const dElems = [];
+      const cElems = [];
+      (en.rows || []).forEach((r) => {
+        if (r.dSub) dElems.push(elementDirectionLabel(classifySubjectElement(r.dSub), "d"));
+        if (r.cSub) cElems.push(elementDirectionLabel(classifySubjectElement(r.cSub), "c"));
       });
-      html += "</div>";
-    }
-
-    // Question Box (Collapsible premise when focusLine exists)
-    html += '<div class="drill-question-box">';
-    if (card.focusLine) {
-      const premise = getPremiseSummary(card.questionBody, card.focusLine);
-      html +=
-        '<div class="drill-focus-banner drill-focus-card">' +
-        '<span class="focus-badge">今回の仕訳対象（' + escapeHtml(card.targetLabel || "取引") + "）</span>" +
-        '<div class="focus-text">' + formatInlineMd(card.focusLine) + "</div>" +
-        (premise ? '<div class="drill-premise-summary">' + formatInlineMd(premise) + "</div>" : "") +
-        "</div>";
-      html +=
-        '<details class="drill-premise-details"><summary>前提・問題全体を表示（他取引を含む）</summary>' +
-        '<div class="drill-question-body" tabindex="0">' + formatQuestionBodyHtml(card.questionBody, card.focusLine) + "</div></details>";
-    } else {
-      html += '<div class="drill-question-body" tabindex="0">' + formatQuestionBodyHtml(card.questionBody, "") + "</div>";
-    }
-    html += "</div>";
-
-    if (mode === "input" || mode === "subject") {
-      const subjectsList = DATA.subjects || [];
-      html += '<datalist id="bokiSubjectsDatalist">';
-      subjectsList.forEach((s) => {
-        html += '<option value="' + escapeHtml(s) + '"></option>';
-      });
-      html += "</datalist>";
-
-      const activeRowIdx = Math.min((ctx.focusedRow || 0), rows.length - 1);
-      html += '<div class="palette-target-bar">';
-      html += '<span class="palette-target-lbl">パレット挿入先：</span>';
-      html += '<div class="mobile-seg-group">';
-      html += '<button type="button" class="mobile-seg-btn palette-target-btn' + (ctx.insertTarget === "dSub" ? " active" : "") + '" data-ptarget="dSub">借方 (行' + (activeRowIdx + 1) + ")</button>";
-      html += '<button type="button" class="mobile-seg-btn palette-target-btn' + (ctx.insertTarget === "cSub" ? " active" : "") + '" data-ptarget="cSub">貸方 (行' + (activeRowIdx + 1) + ")</button>";
-      html += "</div></div>";
-
-      const usedSubs = new Set();
-      rows.forEach((r) => {
-        if (r.dSub) usedSubs.add(normalizeSubject(r.dSub));
-        if (r.cSub) usedSubs.add(normalizeSubject(r.cSub));
-      });
-      const palette = buildSubjectPalette(card);
-      html += '<div class="subject-palette subject-palette-wrap">';
-      palette.forEach((sub) => {
-        const isUsed = usedSubs.has(normalizeSubject(sub));
-        html += '<button type="button" class="palette-chip' + (isUsed ? " is-used" : "") + '" data-sub="' + escapeHtml(sub) + '">' + escapeHtml(sub) + "</button>";
-      });
-      html += "</div>";
-
-      if (mode === "subject") {
-        html += '<div class="table-wrap" tabindex="0"><table class="journal-table drill-input-table drill-subject-only"><thead><tr><th>借方科目</th><th>貸方科目</th><th style="width:40px;"><span class="sr-only">操作</span></th></tr></thead><tbody>';
-        rows.forEach((r, idx) => {
-          const dCls = ctx.insertTarget === "dSub" && idx === activeRowIdx ? " is-target" : "";
-          const cCls = ctx.insertTarget === "cSub" && idx === activeRowIdx ? " is-target" : "";
-          html +=
-            "<tr>" +
-            '<td data-label="借方科目"><input type="text" class="drill-cell-input sub-input' + dCls + '" list="bokiSubjectsDatalist" data-row="' + idx + '" data-field="dSub" aria-label="行' + (idx + 1) + ' 借方科目" placeholder="借方科目..." value="' + escapeHtml(r.dSub) + '" /></td>' +
-            '<td data-label="貸方科目"><input type="text" class="drill-cell-input sub-input' + cCls + '" list="bokiSubjectsDatalist" data-row="' + idx + '" data-field="cSub" aria-label="行' + (idx + 1) + ' 貸方科目" placeholder="貸方科目..." value="' + escapeHtml(r.cSub) + '" /></td>' +
-            '<td class="del-cell">' + (rows.length > 1 ? '<button type="button" class="row-del-btn" data-del-row="' + idx + '" title="行を削除" aria-label="行' + (idx + 1) + 'を削除">✕</button>' : "") + "</td>" +
-            "</tr>";
-        });
-        html += "</tbody></table></div>";
-      } else {
-        html += '<div class="table-wrap" tabindex="0"><table class="journal-table drill-input-table"><thead><tr><th>借方科目</th><th class="num">借方金額</th><th>貸方科目</th><th class="num">貸方金額</th><th style="width:40px;"><span class="sr-only">操作</span></th></tr></thead><tbody>';
-        rows.forEach((r, idx) => {
-          const dCls = ctx.insertTarget === "dSub" && idx === activeRowIdx ? " is-target" : "";
-          const cCls = ctx.insertTarget === "cSub" && idx === activeRowIdx ? " is-target" : "";
-          html +=
-            "<tr>" +
-            '<td data-label="借方科目"><input type="text" class="drill-cell-input sub-input' + dCls + '" list="bokiSubjectsDatalist" data-row="' + idx + '" data-field="dSub" aria-label="行' + (idx + 1) + ' 借方科目" placeholder="借方科目..." value="' + escapeHtml(r.dSub) + '" /></td>' +
-            '<td data-label="借方金額"><input type="text" inputmode="numeric" class="drill-cell-input amt-input num" data-row="' + idx + '" data-field="dAmt" aria-label="行' + (idx + 1) + ' 借方金額" placeholder="0" value="' + escapeHtml(r.dAmt) + '" /></td>' +
-            '<td data-label="貸方科目"><input type="text" class="drill-cell-input sub-input' + cCls + '" list="bokiSubjectsDatalist" data-row="' + idx + '" data-field="cSub" aria-label="行' + (idx + 1) + ' 貸方科目" placeholder="貸方科目..." value="' + escapeHtml(r.cSub) + '" /></td>' +
-            '<td data-label="貸方金額"><input type="text" inputmode="numeric" class="drill-cell-input amt-input num" data-row="' + idx + '" data-field="cAmt" aria-label="行' + (idx + 1) + ' 貸方金額" placeholder="0" value="' + escapeHtml(r.cAmt) + '" /></td>' +
-            '<td class="del-cell">' + (rows.length > 1 ? '<button type="button" class="row-del-btn" data-del-row="' + idx + '" title="行を削除" aria-label="行' + (idx + 1) + 'を削除">✕</button>' : "") + "</td>" +
-            "</tr>";
-        });
-        html += "</tbody></table></div>";
-      }
-
-      html += '<div class="drill-live-bar">';
-      html += '<div class="amt-quick-bar">';
-      html += '<button type="button" class="mask-btn" id="drillAddRowBtn">＋ 行を追加</button>';
-      if (mode === "input") {
-        html += '<button type="button" class="mask-btn" id="drillZero3Btn">+000</button>';
-        html += '<button type="button" class="mask-btn" id="drillZero4Btn">+0000</button>';
-        html += '<button type="button" class="mask-btn" id="drillBalanceFillBtn" title="貸借の差額を自動補完 (D)">差額補完</button>';
-        html += '<button type="button" class="mask-btn' + (inlineCalcState.open ? " active" : "") + '" id="drillInlineCalcToggleBtn" title="ミニ電卓 (C)">' + INLINE_CALC_SVG + " 電卓</button>";
-      }
-      html += "</div>";
-      if (mode === "input") {
-        html += '<div id="drillLiveBalance" class="live-balance-group"></div>';
-      }
-      html += "</div>";
-
-      if (mode === "input") html += renderInlineCalcHtml();
-
-      if (ctx.hintLevel > 0) {
-        const fh = formatFiveElementHint(card);
-        html += '<div class="drill-hint-box hint-stepper-box">';
-        html += '<div class="hint-step-row"><strong>Hint 1（5要素・型）：</strong><code>' + escapeHtml(fh.formats) + "</code> ／ 借方：<strong>" + escapeHtml(fh.debit) + "</strong> ｜ 貸方：<strong>" + escapeHtml(fh.credit) + "</strong></div>";
-        if (ctx.hintLevel >= 2) {
-          const dSubs = Array.from(new Set((card.rows || []).map((r) => r.dSub).filter(Boolean)));
-          const cSubs = Array.from(new Set((card.rows || []).map((r) => r.cSub).filter(Boolean)));
-          html += '<div class="hint-step-row"><strong>Hint 2（科目構成・' + card.rows.length + "行）：</strong>借方 [" + escapeHtml(dSubs.join("・")) + "] ／ 貸方 [" + escapeHtml(cSubs.join("・")) + "]</div>";
-        }
-        if (ctx.hintLevel >= 3 && card.explanation) {
-          const expShort = String(card.explanation).split(/\r?\n/).filter(Boolean).slice(0, 2).join(" ");
-          html += '<div class="hint-step-row"><strong>Hint 3（論点の急所）：</strong>' + formatInlineMd(expShort) + "</div>";
-        }
-        html += "</div>";
-      }
-
-      html += '<div class="drill-controls-row">';
-      html += '<div class="drill-reveal-btns">';
-      html += '<button type="button" class="primary-btn" id="drillCheckBtn">判定する（採点）</button>';
-      html += '<button type="button" class="secondary-btn" id="drillHintBtn">' +
-        (ctx.hintLevel === 0 ? "ヒント 1/3" : ctx.hintLevel < 3 ? "次のヒント (" + (ctx.hintLevel + 1) + "/3)" : "ヒントを隠す") +
-        "</button>";
-      html += '<button type="button" class="mask-btn" id="drillOpenDocBtn">単元テキスト</button>';
-      html += "</div>";
-      if (!ctx.hideNavBtns) {
-        html += '<div class="drill-nav-btns"><button type="button" class="mask-btn" id="drillPrevBtn">← 前</button><button type="button" class="mask-btn" id="drillNextBtn">次 →</button></div>';
-      }
-      html += "</div>";
-
-      if (ctx.gradeResult) {
-        const res = ctx.gradeResult;
-        const cls = res.status === "perfect" ? "grade-perfect" : res.status === "partial" ? "grade-partial" : "grade-wrong";
-        html += '<div class="grade-result-box ' + cls + '">';
-        html += '<div class="grade-msg">' + escapeHtml(res.message) + "</div>";
-        if (res.details && res.details.length) {
-          html += '<ul class="grade-diff-list">' + res.details.map((d) => "<li>" + escapeHtml(d) + "</li>").join("") + "</ul>";
-        }
-        html += '<div class="grade-answer-title">模範仕訳</div>';
-        html += '<div class="table-wrap" tabindex="0"><table class="journal-table drill-table"><thead><tr><th>借方科目</th><th class="num">借方金額</th><th>貸方科目</th><th class="num">貸方金額</th></tr></thead><tbody>';
-        card.rows.forEach((r) => {
-          html += "<tr><td>" + escapeHtml(r.dSub) + '</td><td class="num">' + escapeHtml(r.dAmt) + "</td><td>" + escapeHtml(r.cSub) + '</td><td class="num">' + escapeHtml(r.cAmt) + "</td></tr>";
-        });
-        html += "</tbody></table></div>";
-        if (card.explanation) {
-          html += '<div class="drill-explanation-box"><strong>解説・誤答パターン分析</strong><div class="exp-body">' + formatQuestionBodyHtml(card.explanation, "") + "</div></div>";
-        }
-        html += renderMistakeTagBoxHtml(card.id);
-        html += renderSm2BarHtml(card.id, ctx.autoAppliedQuality);
-        html += '<div style="margin-top:12px;"><button type="button" class="primary-btn" id="drillAfterGradeNextBtn">次の問題へ →</button></div>';
-        html += "</div>";
-      }
-    } else {
-      // Flashcard Mode
-      html += '<div class="table-wrap" tabindex="0"><table class="journal-table drill-table"><thead><tr><th>借方科目</th><th class="num">借方金額</th><th>貸方科目</th><th class="num">貸方金額</th></tr></thead><tbody>';
-      card.rows.forEach((r) => {
-        const showSub = ctx.revealStep >= 1;
-        const showAmt = ctx.revealStep >= 2;
-        const dSubHtml = r.dSub ? (showSub ? escapeHtml(r.dSub) : '<span class="drill-mask">？</span>') : "";
-        const dAmtHtml = r.dAmt ? (showAmt ? escapeHtml(r.dAmt) : '<span class="drill-mask">？円</span>') : "";
-        const cSubHtml = r.cSub ? (showSub ? escapeHtml(r.cSub) : '<span class="drill-mask">？</span>') : "";
-        const cAmtHtml = r.cAmt ? (showAmt ? escapeHtml(r.cAmt) : '<span class="drill-mask">？円</span>') : "";
-        html += "<tr><td>" + dSubHtml + '</td><td class="num">' + dAmtHtml + "</td><td>" + cSubHtml + '</td><td class="num">' + cAmtHtml + "</td></tr>";
-      });
-      html += "</tbody></table></div>";
-
-      if (ctx.revealStep >= 2 && card.explanation) {
-        html += '<div class="drill-explanation-box"><strong>解説・誤答パターン分析</strong><div class="exp-body">' + formatQuestionBodyHtml(card.explanation, "") + "</div></div>";
-      }
-      if (ctx.revealStep >= 2) {
-        html += renderMistakeTagBoxHtml(card.id);
-      }
-
-      html += '<div class="drill-controls-row">';
-      html += '<div class="drill-reveal-btns">';
-      html += '<button type="button" class="secondary-btn" id="drillRevealSubBtn">科目だけ表示</button>';
-      html += '<button type="button" class="primary-btn" id="drillRevealAllBtn">すべて表示＆解説</button>';
-      html += '<button type="button" class="mask-btn" id="drillOpenDocBtn">単元テキスト</button>';
-      html += "</div>";
-      if (!ctx.hideNavBtns) {
-        html += '<div class="drill-nav-btns"><button type="button" class="mask-btn" id="drillPrevBtn">← 前</button><button type="button" class="mask-btn" id="drillNextBtn">次 →</button></div>';
-      }
-      html += "</div>";
-
-      html += renderSm2BarHtml(card.id, null);
-    }
-
-    html += "</div>";
-    return html;
+      return {
+        label: en.targetLabel || "仕訳",
+        debit: Array.from(new Set(dElems)).join(" · ") || "—",
+        credit: Array.from(new Set(cElems)).join(" · ") || "—"
+      };
+    });
+    return { formats: fmtStr, lines };
   }
 
-  function updateLiveBalanceBarFor(rows) {
-    const bar = document.getElementById("drillLiveBalance");
-    if (!bar) return;
-    let dSum = 0;
-    let cSum = 0;
-    (rows || []).forEach((r) => {
-      dSum += parseInputAmount(r.dAmt);
-      cSum += parseInputAmount(r.cAmt);
-    });
-    const diff = Math.abs(dSum - cSum);
-    const balanced = dSum > 0 && dSum === cSum;
-    bar.innerHTML =
-      '<span>借方: <strong>' + fmtYen(dSum) + "</strong></span>" +
-      '<span>貸方: <strong>' + fmtYen(cSum) + "</strong></span>" +
-      (dSum === 0 && cSum === 0
-        ? '<span class="meta-pill">未入力</span>'
-        : balanced
-        ? '<span class="meta-pill emerald-pill">貸借一致</span>'
-        : '<span class="meta-pill danger-pill">差額 ' + fmtYen(diff) + "</span>");
+  function formatProblemStemHtml(body, activeFocusLine) {
+    const lines = String(body || "").split(/\r?\n/);
+    const focusNorm = (activeFocusLine || "").trim();
+    return lines
+      .map((line) => {
+        const t = line.trim();
+        if (!t) return '<div class="dq-spacer"></div>';
+        if (focusNorm && t === focusNorm) {
+          return '<div class="dq-line dq-active-slot">' + formatInlineMd(t) + "</div>";
+        }
+        return '<div class="dq-line">' + formatInlineMd(t) + "</div>";
+      })
+      .join("");
   }
 
   function applyBalanceFillToRows(rows, focusedAmtCell) {
     let dSum = 0;
     let cSum = 0;
-    rows.forEach((r) => {
+    (rows || []).forEach((r) => {
       dSum += parseInputAmount(r.dAmt);
       cSum += parseInputAmount(r.cAmt);
     });
@@ -1445,47 +1266,384 @@
     return true;
   }
 
-  function bindJournalCardShell(root, card, ops) {
+  function updateSlotBalancePill(slotIdx, rows) {
+    const pill = document.getElementById("slotBal_" + slotIdx);
+    if (!pill) return;
+    let dSum = 0;
+    let cSum = 0;
+    (rows || []).forEach((r) => {
+      dSum += parseInputAmount(r.dAmt);
+      cSum += parseInputAmount(r.cAmt);
+    });
+    if (dSum === 0 && cSum === 0) {
+      pill.className = "meta-pill";
+      pill.textContent = "未入力";
+    } else if (dSum === cSum) {
+      pill.className = "meta-pill emerald-pill";
+      pill.textContent = "一致 " + fmtYen(dSum);
+    } else {
+      pill.className = "meta-pill danger-pill";
+      pill.textContent = "差額 " + fmtYen(Math.abs(dSum - cSum));
+    }
+  }
+
+  function renderJournalProblemShellHtml(problem, ctx) {
+    const mode = ctx.mode; // "input" | "subject" | "flash"
+    const entries = problem.entries || [];
+    const slotRows = ctx.slotRows || createEmptySlotRows(problem);
+    const activeSlot = Math.min(ctx.activeSlot || 0, entries.length - 1);
+    const srsRec = state.srs[problem.id];
+    const srsBadge = !srsRec
+      ? '<span class="meta-pill">未学習</span>'
+      : isCardLeech(problem.id)
+      ? '<span class="meta-pill danger-pill">要復習</span>'
+      : isCardDue(problem.id)
+      ? '<span class="meta-pill amber">復習期限</span>'
+      : srsRec.level >= 2
+      ? '<span class="meta-pill emerald-pill">定着 (' + (srsRec.intervalDays || 1) + "日)</span>"
+      : '<span class="meta-pill amber">あいまい</span>';
+
+    let html = '<div class="studio-card drill-card problem-drill-card">';
+    html +=
+      '<div class="drill-card-meta">' +
+      '<div class="drill-card-tags"><span class="meta-pill accent">' + escapeHtml(problem.docId) + "</span> " +
+      '<span class="meta-pill">' + escapeHtml(problem.questionTitle || problem.section) + "</span> " +
+      (entries.length > 1 ? '<span class="meta-pill">全' + entries.length + "仕訳</span> " : "") +
+      srsBadge + "</div>" +
+      '<div class="drill-counter">' + escapeHtml(ctx.counterText) + "</div></div>";
+
+    html += '<div class="drill-doc-title">' + escapeHtml(problem.docTitle) + "</div>";
+
+    if (ctx.showSubmodeSwitch) {
+      html += '<div class="drill-submode-tabs" style="margin-bottom:10px;">';
+      [
+        { id: "input", label: "入力・自動採点" },
+        { id: "subject", label: "科目スピード" },
+        { id: "flash", label: "フラッシュカード" }
+      ].forEach((m) => {
+        html += '<button type="button" class="sim-tab-btn shell-jmode-btn' + (mode === m.id ? " active" : "") + '" data-jmode="' + m.id + '">' + m.label + "</button>";
+      });
+      html += "</div>";
+    }
+
+    const activeFocusLine = entries[activeSlot] ? entries[activeSlot].focusLine : "";
+    html += '<div class="problem-exam-grid">';
+
+    // LEFT PANE: Full Problem Stem (Sticky on Desktop, collapsible on Mobile)
+    html += '<div class="problem-stem-pane">';
+    html += '<div class="problem-stem-head">';
+    html += '<span class="focus-badge">問題文' + (entries.length > 1 ? "（全" + entries.length + "仕訳 通し）" : "") + "</span>";
+    html += '<button type="button" class="mask-btn mobile-only" id="toggleStemBtn">' + (ctx.stemCollapsed ? "問題文を表示" : "問題文を隠す") + "</button>";
+    html += "</div>";
+    html += '<div class="drill-question-box problem-stem-box' + (ctx.stemCollapsed ? " is-collapsed" : "") + '">';
+    html += '<div class="drill-question-body problem-stem-body" tabindex="0">' + formatProblemStemHtml(problem.questionBody, activeFocusLine) + "</div>";
+    html += "</div>";
+    html += "</div>";
+
+    // RIGHT PANE: Continuous Answer Sheet
+    html += '<div class="problem-sheet-pane">';
+
+    if (mode === "input" || mode === "subject") {
+      const subjectsList = DATA.subjects || [];
+      html += '<datalist id="bokiSubjectsDatalist">';
+      subjectsList.forEach((s) => {
+        html += '<option value="' + escapeHtml(s) + '"></option>';
+      });
+      html += "</datalist>";
+
+      const fc = ctx.focusedCell || { slot: activeSlot, row: 0, field: "dSub" };
+      const curSlotRows = slotRows[activeSlot] || [{ dSub: "", dAmt: "", cSub: "", cAmt: "" }];
+      const activeRowIdx = Math.min(fc.row || 0, curSlotRows.length - 1);
+      const activeSlotLabel = entries[activeSlot] ? (entries[activeSlot].targetLabel || "仕訳" + (activeSlot + 1)) : "1";
+
+      html += '<div class="problem-sticky-tools">';
+      html += '<div class="palette-target-bar">';
+      html += '<span class="palette-target-lbl">入力先：<strong>' + escapeHtml(activeSlotLabel) + "</strong> (行" + (activeRowIdx + 1) + ")</span>";
+      html += '<div class="mobile-seg-group">';
+      html += '<button type="button" class="mobile-seg-btn palette-target-btn' + (ctx.insertTarget === "dSub" ? " active" : "") + '" data-ptarget="dSub">借方</button>';
+      html += '<button type="button" class="mobile-seg-btn palette-target-btn' + (ctx.insertTarget === "cSub" ? " active" : "") + '" data-ptarget="cSub">貸方</button>';
+      html += "</div></div>";
+
+      const usedSubs = new Set();
+      slotRows.forEach((rows) => {
+        (rows || []).forEach((r) => {
+          if (r.dSub) usedSubs.add(normalizeSubject(r.dSub));
+          if (r.cSub) usedSubs.add(normalizeSubject(r.cSub));
+        });
+      });
+      const palette = buildSubjectPaletteForProblem(problem);
+      html += '<div class="subject-palette subject-palette-wrap">';
+      palette.forEach((sub) => {
+        const isUsed = usedSubs.has(normalizeSubject(sub));
+        html += '<button type="button" class="palette-chip' + (isUsed ? " is-used" : "") + '" data-sub="' + escapeHtml(sub) + '">' + escapeHtml(sub) + "</button>";
+      });
+      html += "</div>";
+
+      if (mode === "input") {
+        html += '<div class="amt-quick-bar" style="margin-bottom:8px;">';
+        html += '<button type="button" class="mask-btn" id="drillZero3Btn">+000</button>';
+        html += '<button type="button" class="mask-btn" id="drillZero4Btn">+0000</button>';
+        html += '<button type="button" class="mask-btn" id="drillBalanceFillBtn" title="選択中仕訳の貸借差額を補完 (D)">差額補完</button>';
+        html += '<button type="button" class="mask-btn' + (inlineCalcState.open ? " active" : "") + '" id="drillInlineCalcToggleBtn" title="ミニ電卓 (C)">' + INLINE_CALC_SVG + " 電卓</button>";
+        html += "</div>";
+        html += renderInlineCalcHtml();
+      }
+      html += "</div>";
+
+      // All Sub-Entry Slots
+      html += '<div class="entry-slots-list">';
+      entries.forEach((en, sIdx) => {
+        const rows = slotRows[sIdx] || [{ dSub: "", dAmt: "", cSub: "", cAmt: "" }];
+        const isAct = sIdx === activeSlot;
+        const sDiag = ctx.gradeResult && ctx.gradeResult.slotResults ? ctx.gradeResult.slotResults[sIdx] : null;
+        let slotCls = "entry-slot-card" + (isAct ? " is-active-slot" : "");
+        if (sDiag) {
+          slotCls += sDiag.status === "perfect" ? " is-slot-perfect" : sDiag.status === "partial" ? " is-slot-partial" : " is-slot-wrong";
+        }
+        html += '<div class="' + slotCls + '" data-slot-card="' + sIdx + '">';
+        html += '<div class="entry-slot-head">';
+        html += '<div class="entry-slot-title-wrap">';
+        html += '<span class="meta-pill accent">' + escapeHtml(en.targetLabel || "仕訳 " + (sIdx + 1)) + "</span>";
+        if (en.focusLine) {
+          html += '<span class="entry-slot-focus">' + formatInlineMd(en.focusLine) + "</span>";
+        }
+        html += "</div>";
+        if (sDiag) {
+          const bCls = sDiag.status === "perfect" ? "emerald-pill" : sDiag.status === "partial" ? "amber" : "danger-pill";
+          const bTxt = sDiag.status === "perfect" ? "正解" : sDiag.status === "partial" ? "惜しい" : "不正解";
+          html += '<span class="meta-pill ' + bCls + '">' + bTxt + "</span>";
+        } else if (mode === "input") {
+          html += '<span id="slotBal_' + sIdx + '" class="meta-pill">未入力</span>';
+        }
+        html += "</div>";
+
+        if (mode === "subject") {
+          html += '<div class="table-wrap" tabindex="0"><table class="journal-table drill-input-table drill-subject-only"><thead><tr><th>借方科目</th><th>貸方科目</th><th style="width:40px;"><span class="sr-only">操作</span></th></tr></thead><tbody>';
+          rows.forEach((r, rIdx) => {
+            const dCls = isAct && ctx.insertTarget === "dSub" && rIdx === activeRowIdx ? " is-target" : "";
+            const cCls = isAct && ctx.insertTarget === "cSub" && rIdx === activeRowIdx ? " is-target" : "";
+            html +=
+              "<tr>" +
+              '<td data-label="借方科目"><input type="text" class="drill-cell-input sub-input' + dCls + '" list="bokiSubjectsDatalist" data-slot="' + sIdx + '" data-row="' + rIdx + '" data-field="dSub" aria-label="' + escapeHtml(en.targetLabel) + ' 行' + (rIdx + 1) + ' 借方科目" placeholder="借方科目..." value="' + escapeHtml(r.dSub) + '" /></td>' +
+              '<td data-label="貸方科目"><input type="text" class="drill-cell-input sub-input' + cCls + '" list="bokiSubjectsDatalist" data-slot="' + sIdx + '" data-row="' + rIdx + '" data-field="cSub" aria-label="' + escapeHtml(en.targetLabel) + ' 行' + (rIdx + 1) + ' 貸方科目" placeholder="貸方科目..." value="' + escapeHtml(r.cSub) + '" /></td>' +
+              '<td class="del-cell">' + (rows.length > 1 ? '<button type="button" class="row-del-btn" data-slot="' + sIdx + '" data-del-row="' + rIdx + '" title="行を削除" aria-label="行を削除">✕</button>' : "") + "</td>" +
+              "</tr>";
+          });
+          html += "</tbody></table></div>";
+        } else {
+          html += '<div class="table-wrap" tabindex="0"><table class="journal-table drill-input-table"><thead><tr><th>借方科目</th><th class="num">借方金額</th><th>貸方科目</th><th class="num">貸方金額</th><th style="width:40px;"><span class="sr-only">操作</span></th></tr></thead><tbody>';
+          rows.forEach((r, rIdx) => {
+            const dCls = isAct && ctx.insertTarget === "dSub" && rIdx === activeRowIdx ? " is-target" : "";
+            const cCls = isAct && ctx.insertTarget === "cSub" && rIdx === activeRowIdx ? " is-target" : "";
+            html +=
+              "<tr>" +
+              '<td data-label="借方科目"><input type="text" class="drill-cell-input sub-input' + dCls + '" list="bokiSubjectsDatalist" data-slot="' + sIdx + '" data-row="' + rIdx + '" data-field="dSub" aria-label="' + escapeHtml(en.targetLabel) + ' 行' + (rIdx + 1) + ' 借方科目" placeholder="借方科目..." value="' + escapeHtml(r.dSub) + '" /></td>' +
+              '<td data-label="借方金額"><input type="text" inputmode="numeric" class="drill-cell-input amt-input num" data-slot="' + sIdx + '" data-row="' + rIdx + '" data-field="dAmt" aria-label="' + escapeHtml(en.targetLabel) + ' 行' + (rIdx + 1) + ' 借方金額" placeholder="0" value="' + escapeHtml(r.dAmt) + '" /></td>' +
+              '<td data-label="貸方科目"><input type="text" class="drill-cell-input sub-input' + cCls + '" list="bokiSubjectsDatalist" data-slot="' + sIdx + '" data-row="' + rIdx + '" data-field="cSub" aria-label="' + escapeHtml(en.targetLabel) + ' 行' + (rIdx + 1) + ' 貸方科目" placeholder="貸方科目..." value="' + escapeHtml(r.cSub) + '" /></td>' +
+              '<td data-label="貸方金額"><input type="text" inputmode="numeric" class="drill-cell-input amt-input num" data-slot="' + sIdx + '" data-row="' + rIdx + '" data-field="cAmt" aria-label="' + escapeHtml(en.targetLabel) + ' 行' + (rIdx + 1) + ' 貸方金額" placeholder="0" value="' + escapeHtml(r.cAmt) + '" /></td>' +
+              '<td class="del-cell">' + (rows.length > 1 ? '<button type="button" class="row-del-btn" data-slot="' + sIdx + '" data-del-row="' + rIdx + '" title="行を削除" aria-label="行を削除">✕</button>' : "") + "</td>" +
+              "</tr>";
+          });
+          html += "</tbody></table></div>";
+        }
+
+        html += '<div class="entry-slot-footer"><button type="button" class="mask-btn slot-add-row-btn" data-slot="' + sIdx + '">＋ 行を追加</button></div>';
+
+        if (sDiag && sDiag.status !== "perfect") {
+          html += '<div class="slot-feedback-box">';
+          if (sDiag.details && sDiag.details.length) {
+            html += '<ul class="grade-diff-list">' + sDiag.details.map((d) => "<li>" + escapeHtml(d) + "</li>").join("") + "</ul>";
+          }
+          html += '<div class="grade-answer-title">模範仕訳（' + escapeHtml(en.targetLabel) + "）</div>";
+          html += '<div class="table-wrap" tabindex="0"><table class="journal-table drill-table"><thead><tr><th>借方科目</th><th class="num">借方金額</th><th>貸方科目</th><th class="num">貸方金額</th></tr></thead><tbody>';
+          en.rows.forEach((mr) => {
+            html += "<tr><td>" + escapeHtml(mr.dSub) + '</td><td class="num">' + escapeHtml(mr.dAmt) + "</td><td>" + escapeHtml(mr.cSub) + '</td><td class="num">' + escapeHtml(mr.cAmt) + "</td></tr>";
+          });
+          html += "</tbody></table></div></div>";
+        }
+        html += "</div>";
+      });
+      html += "</div>";
+
+      if (ctx.hintLevel > 0) {
+        const fh = formatFiveElementHintForProblem(problem);
+        html += '<div class="drill-hint-box hint-stepper-box">';
+        html += '<div class="hint-step-row"><strong>Hint 1（5要素・下書き型）：</strong><code>' + escapeHtml(fh.formats) + "</code></div>";
+        fh.lines.forEach((ln) => {
+          html += '<div class="hint-step-row">・' + escapeHtml(ln.label) + "：借方 <strong>" + escapeHtml(ln.debit) + "</strong> ｜ 貸方 <strong>" + escapeHtml(ln.credit) + "</strong></div>";
+        });
+        if (ctx.hintLevel >= 2) {
+          html += '<div class="hint-step-row" style="margin-top:4px;"><strong>Hint 2（勘定科目構成）：</strong></div>';
+          entries.forEach((en) => {
+            const dSubs = Array.from(new Set((en.rows || []).map((r) => r.dSub).filter(Boolean)));
+            const cSubs = Array.from(new Set((en.rows || []).map((r) => r.cSub).filter(Boolean)));
+            html += '<div class="hint-step-row">・' + escapeHtml(en.targetLabel) + " (" + en.rows.length + "行)：借方 [" + escapeHtml(dSubs.join("・")) + "] ／ 貸方 [" + escapeHtml(cSubs.join("・")) + "]</div>";
+          });
+        }
+        if (ctx.hintLevel >= 3 && problem.explanation) {
+          const expShort = String(problem.explanation).split(/\r?\n/).filter(Boolean).slice(0, 3).join(" ");
+          html += '<div class="hint-step-row" style="margin-top:4px;"><strong>Hint 3（論点の急所）：</strong>' + formatInlineMd(expShort) + "</div>";
+        }
+        html += "</div>";
+      }
+
+      html += '<div class="drill-controls-row">';
+      html += '<div class="drill-reveal-btns">';
+      html += '<button type="button" class="primary-btn" id="drillCheckBtn">' + (entries.length > 1 ? "この問題をまとめて採点する" : "判定する（採点）") + "</button>";
+      html += '<button type="button" class="secondary-btn" id="drillHintBtn">' +
+        (ctx.hintLevel === 0 ? "ヒント 1/3" : ctx.hintLevel < 3 ? "次のヒント (" + (ctx.hintLevel + 1) + "/3)" : "ヒントを隠す") +
+        "</button>";
+      html += '<button type="button" class="mask-btn" id="drillOpenDocBtn">単元テキスト</button>';
+      html += "</div>";
+      if (!ctx.hideNavBtns) {
+        html += '<div class="drill-nav-btns"><button type="button" class="mask-btn" id="drillPrevBtn">← 前の問題</button><button type="button" class="mask-btn" id="drillNextBtn">次の問題 →</button></div>';
+      }
+      html += "</div>";
+
+      if (ctx.gradeResult) {
+        const res = ctx.gradeResult;
+        const cls = res.allOk ? "grade-perfect" : res.okCount > 0 ? "grade-partial" : "grade-wrong";
+        const wrongSlots = res.totalSlots - res.okCount;
+        html += '<div class="grade-result-box ' + cls + '">';
+        html += '<div class="grade-msg">' + escapeHtml(res.message) + "</div>";
+        if (problem.explanation) {
+          html += '<div class="drill-explanation-box"><strong>解説・誤答パターン分析</strong><div class="exp-body">' + formatQuestionBodyHtml(problem.explanation, "") + "</div></div>";
+        }
+        html += renderMistakeTagBoxHtml(problem.id);
+        html += renderSm2BarHtml(problem.id, ctx.autoAppliedQuality);
+        html += '<div style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;">';
+        if (wrongSlots > 0 && res.hasAnyInput) {
+          html += '<button type="button" class="secondary-btn" id="drillRetryWrongSlotsBtn">間違えた仕訳だけこの場で解き直す（' + wrongSlots + "仕訳）</button>";
+        }
+        html += '<button type="button" class="primary-btn" id="drillAfterGradeNextBtn">次の問題へ →</button>';
+        html += "</div></div>";
+      }
+    } else {
+      // Flashcard Mode (All sub-entries of the problem together)
+      entries.forEach((en) => {
+        html += '<div class="entry-slot-card">';
+        html += '<div class="entry-slot-head"><div class="entry-slot-title-wrap"><span class="meta-pill accent">' + escapeHtml(en.targetLabel || "仕訳") + "</span>" +
+          (en.focusLine ? '<span class="entry-slot-focus">' + formatInlineMd(en.focusLine) + "</span>" : "") + "</div></div>";
+        html += '<div class="table-wrap" tabindex="0"><table class="journal-table drill-table"><thead><tr><th>借方科目</th><th class="num">借方金額</th><th>貸方科目</th><th class="num">貸方金額</th></tr></thead><tbody>';
+        en.rows.forEach((r) => {
+          const showSub = ctx.revealStep >= 1;
+          const showAmt = ctx.revealStep >= 2;
+          const dSubHtml = r.dSub ? (showSub ? escapeHtml(r.dSub) : '<span class="drill-mask">？</span>') : "";
+          const dAmtHtml = r.dAmt ? (showAmt ? escapeHtml(r.dAmt) : '<span class="drill-mask">？円</span>') : "";
+          const cSubHtml = r.cSub ? (showSub ? escapeHtml(r.cSub) : '<span class="drill-mask">？</span>') : "";
+          const cAmtHtml = r.cAmt ? (showAmt ? escapeHtml(r.cAmt) : '<span class="drill-mask">？円</span>') : "";
+          html += "<tr><td>" + dSubHtml + '</td><td class="num">' + dAmtHtml + "</td><td>" + cSubHtml + '</td><td class="num">' + cAmtHtml + "</td></tr>";
+        });
+        html += "</tbody></table></div></div>";
+      });
+
+      if (ctx.revealStep >= 2 && problem.explanation) {
+        html += '<div class="drill-explanation-box"><strong>解説・誤答パターン分析</strong><div class="exp-body">' + formatQuestionBodyHtml(problem.explanation, "") + "</div></div>";
+      }
+      if (ctx.revealStep >= 2) {
+        html += renderMistakeTagBoxHtml(problem.id);
+      }
+
+      html += '<div class="drill-controls-row">';
+      html += '<div class="drill-reveal-btns">';
+      html += '<button type="button" class="secondary-btn" id="drillRevealSubBtn">科目だけ表示</button>';
+      html += '<button type="button" class="primary-btn" id="drillRevealAllBtn">すべて表示＆解説</button>';
+      html += '<button type="button" class="mask-btn" id="drillOpenDocBtn">単元テキスト</button>';
+      html += "</div>";
+      if (!ctx.hideNavBtns) {
+        html += '<div class="drill-nav-btns"><button type="button" class="mask-btn" id="drillPrevBtn">← 前の問題</button><button type="button" class="mask-btn" id="drillNextBtn">次の問題 →</button></div>';
+      }
+      html += "</div>";
+      html += renderSm2BarHtml(problem.id, null);
+    }
+
+    html += "</div></div>"; // close sheet pane + exam grid
+    html += "</div>"; // close studio-card
+    return html;
+  }
+
+  function bindJournalProblemShell(root, problem, ops) {
     root.querySelectorAll(".shell-jmode-btn").forEach((b) => {
       b.onclick = () => ops.setMode(b.dataset.jmode);
     });
+    const stemToggle = document.getElementById("toggleStemBtn");
+    if (stemToggle) stemToggle.onclick = () => ops.setStemCollapsed(!ops.getStemCollapsed());
+
     const openDocBtn = document.getElementById("drillOpenDocBtn");
-    if (openDocBtn) openDocBtn.onclick = () => openDoc(card.docId);
+    if (openDocBtn) openDocBtn.onclick = () => openDoc(problem.docId);
     const prevBtn = document.getElementById("drillPrevBtn");
     if (prevBtn && ops.onPrev) prevBtn.onclick = ops.onPrev;
     const nextBtn = document.getElementById("drillNextBtn");
     if (nextBtn && ops.onNext) nextBtn.onclick = ops.onNext;
 
     const mode = ops.getMode();
-    const rows = ops.getRows();
+    const slotRows = ops.getSlotRows();
+    const entries = problem.entries || [];
 
     if (mode === "input" || mode === "subject") {
-      if (mode === "input") updateLiveBalanceBarFor(rows);
+      if (mode === "input") {
+        entries.forEach((_, sIdx) => updateSlotBalancePill(sIdx, slotRows[sIdx]));
+      }
+
+      const highlightActiveStemLine = (sIdx) => {
+        const stemBox = root.querySelector(".problem-stem-body");
+        if (!stemBox) return;
+        const targetText = ((entries[sIdx] && entries[sIdx].focusLine) || "").trim();
+        stemBox.querySelectorAll(".dq-line").forEach((lineEl) => {
+          const match = targetText && lineEl.textContent.trim() === targetText;
+          lineEl.classList.toggle("dq-active-slot", !!match);
+        });
+      };
+
+      const setActiveSlotDom = (sIdx) => {
+        ops.setActiveSlot(sIdx);
+        root.querySelectorAll("[data-slot-card]").forEach((cardEl) => {
+          cardEl.classList.toggle("is-active-slot", Number(cardEl.dataset.slotCard) === sIdx);
+        });
+        const lblEl = root.querySelector(".palette-target-lbl strong");
+        if (lblEl && entries[sIdx]) lblEl.textContent = entries[sIdx].targetLabel || "仕訳" + (sIdx + 1);
+        highlightActiveStemLine(sIdx);
+      };
+
+      root.querySelectorAll("[data-slot-card]").forEach((cardEl) => {
+        cardEl.addEventListener("click", () => {
+          const sIdx = Number(cardEl.dataset.slotCard);
+          if (sIdx !== ops.getActiveSlot()) {
+            setActiveSlotDom(sIdx);
+            const fc = ops.getFocusedCell();
+            if (fc.slot !== sIdx) ops.setFocusedCell({ slot: sIdx, row: 0, field: ops.getInsertTarget() });
+            const fa = ops.getFocusedAmt();
+            if (fa.slot !== sIdx) ops.setFocusedAmt({ slot: sIdx, row: 0, field: "dAmt" });
+          }
+        });
+      });
 
       root.querySelectorAll(".palette-target-btn").forEach((b) => {
         b.onclick = () => {
           ops.setInsertTarget(b.dataset.ptarget);
           const fc = ops.getFocusedCell();
-          ops.setFocusedCell({ row: fc.row, field: b.dataset.ptarget });
+          ops.setFocusedCell({ slot: ops.getActiveSlot(), row: fc.row || 0, field: b.dataset.ptarget });
           ops.rerender();
         };
       });
 
       root.querySelectorAll(".drill-cell-input").forEach((inp) => {
         if (!inp.dataset.field) return;
+        const sIdx = Number(inp.dataset.slot);
         const rIdx = Number(inp.dataset.row);
         const fld = inp.dataset.field;
         inp.addEventListener("focus", () => {
+          if (sIdx !== ops.getActiveSlot()) setActiveSlotDom(sIdx);
           if (fld === "dSub" || fld === "cSub") {
-            ops.setFocusedCell({ row: rIdx, field: fld });
+            ops.setFocusedCell({ slot: sIdx, row: rIdx, field: fld });
             ops.setInsertTarget(fld);
           } else if (fld === "dAmt" || fld === "cAmt") {
-            ops.setFocusedAmt({ row: rIdx, field: fld });
+            ops.setFocusedAmt({ slot: sIdx, row: rIdx, field: fld });
           }
         });
         inp.addEventListener("input", () => {
-          rows[rIdx][fld] = inp.value;
-          if (mode === "input") updateLiveBalanceBarFor(rows);
+          slotRows[sIdx][rIdx][fld] = inp.value;
+          if (mode === "input") updateSlotBalancePill(sIdx, slotRows[sIdx]);
         });
         inp.addEventListener("keydown", (e) => {
           if (e.key === "Enter" && !e.isComposing) {
@@ -1502,55 +1660,63 @@
 
       root.querySelectorAll(".palette-chip").forEach((chip) => {
         chip.onclick = () => {
-          const fc = ops.getFocusedCell() || { row: 0, field: "dSub" };
-          const r = Math.min(fc.row, rows.length - 1);
+          const fc = ops.getFocusedCell() || { slot: 0, row: 0, field: "dSub" };
+          const s = Math.min(ops.getActiveSlot(), slotRows.length - 1);
+          const rows = slotRows[s];
+          const r = Math.min(fc.slot === s ? (fc.row || 0) : 0, rows.length - 1);
           const fld = ops.getInsertTarget() === "cSub" ? "cSub" : "dSub";
           rows[r][fld] = chip.dataset.sub;
           if (mode === "subject") {
             const nextFld = fld === "dSub" ? "cSub" : "dSub";
             ops.setInsertTarget(nextFld);
-            ops.setFocusedCell({ row: r, field: nextFld });
+            ops.setFocusedCell({ slot: s, row: r, field: nextFld });
             ops.rerender();
-            const nextInp = root.querySelector('.drill-cell-input[data-row="' + r + '"][data-field="' + nextFld + '"]');
+            const nextInp = root.querySelector('.drill-cell-input[data-slot="' + s + '"][data-row="' + r + '"][data-field="' + nextFld + '"]');
             if (nextInp) nextInp.focus();
           } else {
-            const domInp = root.querySelector('.drill-cell-input[data-row="' + r + '"][data-field="' + fld + '"]');
+            const domInp = root.querySelector('.drill-cell-input[data-slot="' + s + '"][data-row="' + r + '"][data-field="' + fld + '"]');
             if (domInp) domInp.value = chip.dataset.sub;
             const amtFld = fld === "dSub" ? "dAmt" : "cAmt";
             const nextSub = fld === "dSub" ? "cSub" : "dSub";
             ops.setInsertTarget(nextSub);
-            ops.setFocusedCell({ row: r, field: nextSub });
-            ops.setFocusedAmt({ row: r, field: amtFld });
-            const amtInp = root.querySelector('.drill-cell-input[data-row="' + r + '"][data-field="' + amtFld + '"]');
+            ops.setFocusedCell({ slot: s, row: r, field: nextSub });
+            ops.setFocusedAmt({ slot: s, row: r, field: amtFld });
+            const amtInp = root.querySelector('.drill-cell-input[data-slot="' + s + '"][data-row="' + r + '"][data-field="' + amtFld + '"]');
             if (amtInp) amtInp.focus();
           }
         };
       });
 
       root.querySelectorAll(".row-del-btn").forEach((b) => {
-        b.onclick = () => {
-          rows.splice(Number(b.dataset.delRow), 1);
+        b.onclick = (e) => {
+          e.stopPropagation();
+          const s = Number(b.dataset.slot);
+          slotRows[s].splice(Number(b.dataset.delRow), 1);
           ops.rerender();
         };
       });
 
-      const addBtn = document.getElementById("drillAddRowBtn");
-      if (addBtn) {
-        addBtn.onclick = () => {
-          rows.push({ dSub: "", dAmt: "", cSub: "", cAmt: "" });
+      root.querySelectorAll(".slot-add-row-btn").forEach((b) => {
+        b.onclick = (e) => {
+          e.stopPropagation();
+          const s = Number(b.dataset.slot);
+          ops.setActiveSlot(s);
+          slotRows[s].push({ dSub: "", dAmt: "", cSub: "", cAmt: "" });
           ops.rerender();
         };
-      }
+      });
 
       const multFocusedAmt = (zeros) => {
-        const fa = ops.getFocusedAmt() || { row: 0, field: "dAmt" };
-        const r = Math.min(fa.row, rows.length - 1);
+        const fa = ops.getFocusedAmt() || { slot: 0, row: 0, field: "dAmt" };
+        const s = Math.min(ops.getActiveSlot(), slotRows.length - 1);
+        const rows = slotRows[s];
+        const r = Math.min(fa.slot === s ? (fa.row || 0) : 0, rows.length - 1);
         const fld = fa.field === "cAmt" ? "cAmt" : "dAmt";
         const cur = String(rows[r][fld] || "").trim();
         if (!cur || cur === "0") return;
         rows[r][fld] = cur + zeros;
         ops.rerender();
-        const dom = root.querySelector('.drill-cell-input[data-row="' + r + '"][data-field="' + fld + '"]');
+        const dom = root.querySelector('.drill-cell-input[data-slot="' + s + '"][data-row="' + r + '"][data-field="' + fld + '"]');
         if (dom) dom.focus();
       };
       const z3 = document.getElementById("drillZero3Btn");
@@ -1561,7 +1727,11 @@
       const bf = document.getElementById("drillBalanceFillBtn");
       if (bf) {
         bf.onclick = () => {
-          if (applyBalanceFillToRows(rows, ops.getFocusedAmt())) ops.rerender();
+          const s = Math.min(ops.getActiveSlot(), slotRows.length - 1);
+          const fa = ops.getFocusedAmt();
+          if (applyBalanceFillToRows(slotRows[s], fa && fa.slot === s ? fa : { row: 0, field: "cAmt" })) {
+            ops.rerender();
+          }
         };
       }
 
@@ -1574,10 +1744,11 @@
       }
 
       bindInlineCalc(root, (val) => {
-        const fa = ops.getFocusedAmt() || { row: 0, field: "dAmt" };
-        const r = Math.min(fa.row, rows.length - 1);
+        const s = Math.min(ops.getActiveSlot(), slotRows.length - 1);
+        const fa = ops.getFocusedAmt() || { slot: s, row: 0, field: "dAmt" };
+        const r = Math.min(fa.slot === s ? (fa.row || 0) : 0, slotRows[s].length - 1);
         const fld = fa.field === "cAmt" ? "cAmt" : "dAmt";
-        rows[r][fld] = String(Math.round(val));
+        slotRows[s][r][fld] = String(Math.round(val));
         ops.rerender();
       });
 
@@ -1592,23 +1763,63 @@
       const chkBtn = document.getElementById("drillCheckBtn");
       if (chkBtn) {
         chkBtn.onclick = () => {
-          const diag = diagnoseJournalAnswer(rows, card.rows, { subjectsOnly: mode === "subject" });
-          const isEmpty = diag.dUserSum === 0 && diag.cUserSum === 0 && mode === "input" &&
-            rows.every((r) => !normalizeSubject(r.dSub) && !normalizeSubject(r.cSub));
-          if (isEmpty) {
-            ops.setGrade(diag, null);
+          const hasAnyInput = slotRows.some((rows) =>
+            (rows || []).some((r) => normalizeSubject(r.dSub) || normalizeSubject(r.cSub) || parseInputAmount(r.dAmt) > 0 || parseInputAmount(r.cAmt) > 0)
+          );
+          if (!hasAnyInput) {
+            ops.setGrade({
+              allOk: false,
+              okCount: 0,
+              totalSlots: entries.length,
+              slotResults: entries.map(() => ({ status: "wrong", details: [] })),
+              hasAnyInput: false,
+              message: "借方・貸方の勘定科目と金額を入力してください。"
+            }, null);
             return;
           }
-          const q = diag.suggestedQuality;
-          recordSrsReview(card.id, q);
-          if (q === 0) bumpMistakeCount(card.id);
-          ops.setGrade(diag, q);
+          const slotResults = entries.map((en, sIdx) =>
+            diagnoseJournalAnswer(slotRows[sIdx] || [], en.rows, { subjectsOnly: mode === "subject" })
+          );
+          const okCount = slotResults.filter((r) => r.status === "perfect").length;
+          const partialCount = slotResults.filter((r) => r.status === "partial").length;
+          const allOk = okCount === entries.length;
+          const q = allOk ? 2 : (okCount + partialCount >= Math.ceil(entries.length / 2) ? 1 : 0);
+          const msg = entries.length === 1
+            ? slotResults[0].message
+            : (allOk
+                ? "全問完全正解（" + okCount + " / " + entries.length + " 仕訳）— 本番レベルの正確な処理です。"
+                : okCount + " / " + entries.length + " 仕訳正解 — 誤答スロットの差分と模範仕訳を確認しましょう。");
+          recordSrsReview(problem.id, q);
+          if (q === 0) bumpMistakeCount(problem.id);
+          ops.setGrade({
+            allOk,
+            okCount,
+            totalSlots: entries.length,
+            slotResults,
+            hasAnyInput: true,
+            message: msg
+          }, q);
         };
       }
 
       if (ops.getGrade()) {
-        bindMistakeTagBox(root, card.id);
+        bindMistakeTagBox(root, problem.id);
         bindSm2Bar(root, (q) => ops.onAfterGradeRate(q));
+        const retryWrongBtn = document.getElementById("drillRetryWrongSlotsBtn");
+        if (retryWrongBtn) {
+          retryWrongBtn.onclick = () => {
+            const res = ops.getGrade();
+            let firstWrong = -1;
+            res.slotResults.forEach((sr, sIdx) => {
+              if (sr.status !== "perfect") {
+                slotRows[sIdx] = [{ dSub: "", dAmt: "", cSub: "", cAmt: "" }];
+                if (firstWrong < 0) firstWrong = sIdx;
+              }
+            });
+            if (firstWrong >= 0) ops.setActiveSlot(firstWrong);
+            ops.setGrade(null, null);
+          };
+        }
         const afterBtn = document.getElementById("drillAfterGradeNextBtn");
         if (afterBtn) afterBtn.onclick = () => ops.onNextWithCurrentGrade();
       }
@@ -1617,29 +1828,29 @@
       if (subBtn) subBtn.onclick = () => ops.setRevealStep(1);
       const allBtn = document.getElementById("drillRevealAllBtn");
       if (allBtn) allBtn.onclick = () => ops.setRevealStep(2);
-      if (ops.getRevealStep() >= 2) bindMistakeTagBox(root, card.id);
+      if (ops.getRevealStep() >= 2) bindMistakeTagBox(root, problem.id);
       bindSm2Bar(root, (q) => ops.onAfterGradeRate(q));
     }
   }
 
   function getFilteredDrills() {
-    const all = DATA.drills || [];
+    const all = getJournalProblems();
     const nowMs = Date.now();
-    return all.filter((c) => {
-      if (drillState.part !== "all" && c.part !== drillState.part) return false;
-      if (drillState.docFilter && c.docId !== drillState.docFilter) return false;
-      const rec = state.srs[c.id];
+    return all.filter((p) => {
+      if (drillState.part !== "all" && p.part !== drillState.part) return false;
+      if (drillState.docFilter && p.docId !== drillState.docFilter) return false;
+      const rec = state.srs[p.id];
       const lvl = rec ? rec.level : 0;
-      if (drillState.queueMode === "due" && !isCardDue(c.id, nowMs)) return false;
+      if (drillState.queueMode === "due" && !isCardDue(p.id, nowMs)) return false;
       if (drillState.queueMode === "unmastered" && rec && lvl >= 2) return false;
-      if (drillState.queueMode === "leech" && !isCardLeech(c.id)) return false;
+      if (drillState.queueMode === "leech" && !isCardLeech(p.id)) return false;
       return true;
     });
   }
 
   function rebuildDeck(shuffleIt = false, customIds = null) {
     let list = customIds
-      ? (DATA.drills || []).filter((c) => customIds.includes(c.id))
+      ? getJournalProblems().filter((p) => customIds.includes(p.id))
       : getFilteredDrills().slice();
     if (shuffleIt) {
       for (let i = list.length - 1; i > 0; i--) {
@@ -1655,7 +1866,7 @@
     drillState.revealStep = 0;
     drillState.sessionLog = [];
     drillState.sessionSummary = null;
-    resetInputForCard();
+    resetInputForCard(list[0]);
   }
 
   function stopBlitz() {
@@ -1668,10 +1879,10 @@
 
   function startBlitz() {
     stopBlitz();
-    drillState.sessionLimit = 10;
+    drillState.sessionLimit = 5;
     rebuildDeck(true);
     if (drillState.deck.length === 0) return;
-    drillState.deck = drillState.deck.slice(0, Math.min(10, drillState.deck.length));
+    drillState.deck = drillState.deck.slice(0, Math.min(5, drillState.deck.length));
     drillState.blitzActive = true;
     drillState.blitzTotal = drillState.deck.length;
     drillState.blitzCount = 0;
@@ -1694,7 +1905,7 @@
     root.innerHTML =
       renderDojoTabBar() +
       renderSessionSummaryHtml(
-        "10問タイムアタック完了（所要 " + elapsed + "秒）",
+        "5問実戦アタック完了（所要 " + elapsed + "秒）",
         drillState.sessionLog.length ? drillState.sessionLog : Array.from({ length: total }, (_, i) => ({ cardId: "b" + i, ok: i < score, sec: Math.round(elapsed / Math.max(1, total)) })),
         "blitzRetryWrongBtn",
         "blitzRetryBtn",
@@ -1738,7 +1949,7 @@
     if (drillState.deck.length === 0) return;
     drillState.idx = (drillState.idx + delta + drillState.deck.length) % drillState.deck.length;
     drillState.revealStep = 0;
-    resetInputForCard();
+    resetInputForCard(drillState.deck[drillState.idx]);
     renderDrillView();
   }
 
@@ -1808,14 +2019,15 @@
       rebuildDeck(false);
     }
 
-    const allCards = DATA.drills || [];
-    const masteredCnt = allCards.filter((c) => state.srs[c.id] && state.srs[c.id].level >= 2).length;
-    const dueCnt = allCards.filter((c) => isCardDue(c.id)).length;
-    const weakCnt = allCards.filter((c) => isCardLeech(c.id)).length;
+    const allProblems = getJournalProblems();
+    const totalEntries = (DATA.drills || []).length;
+    const masteredCnt = allProblems.filter((p) => state.srs[p.id] && state.srs[p.id].level >= 2).length;
+    const dueCnt = allProblems.filter((p) => isCardDue(p.id)).length;
+    const weakCnt = allProblems.filter((p) => isCardLeech(p.id)).length;
 
-    const countByPart = (p) => allCards.filter((c) => c.part === p).length;
+    const countByPart = (p) => allProblems.filter((c) => c.part === p).length;
     const partOptions = [
-      { id: "all", label: "全範囲 (" + allCards.length + ")" },
+      { id: "all", label: "全範囲 (" + allProblems.length + "問)" },
       { id: "L3", label: "3級 (" + countByPart("L3") + ")" },
       { id: "L2C", label: "2級 商簿 (" + countByPart("L2C") + ")" },
       { id: "L2I", label: "2級 工簿 (" + countByPart("L2I") + ")" },
@@ -1826,10 +2038,10 @@
     ];
 
     const docMap = new Map();
-    allCards.forEach((c) => {
-      if (drillState.part !== "all" && c.part !== drillState.part) return;
-      if (!docMap.has(c.docId)) docMap.set(c.docId, { id: c.docId, title: c.docTitle, cnt: 0 });
-      docMap.get(c.docId).cnt++;
+    allProblems.forEach((p) => {
+      if (drillState.part !== "all" && p.part !== drillState.part) return;
+      if (!docMap.has(p.docId)) docMap.set(p.docId, { id: p.docId, title: p.docTitle, cnt: 0 });
+      docMap.get(p.docId).cnt++;
     });
 
     const activeFilterCount = (drillState.part !== "all" ? 1 : 0) + (drillState.docFilter ? 1 : 0) + (drillState.queueMode !== "all" ? 1 : 0);
@@ -1843,13 +2055,13 @@
       "</div>" +
       '<div class="mobile-drill-actions">' +
       '<button type="button" class="mask-btn' + (drillState.mobileFiltersOpen ? " active" : "") + '" id="drillMobileFilterBtn" aria-expanded="' + (drillState.mobileFiltersOpen ? "true" : "false") + '">絞込' + (activeFilterCount ? " (" + activeFilterCount + ")" : "") + "</button>" +
-      '<button type="button" class="primary-btn" id="drillMobileBlitzBtn">10問</button>' +
+      '<button type="button" class="primary-btn" id="drillMobileBlitzBtn">5問</button>' +
       "</div></div>" +
       '<div class="studio-header drill-view-header">' +
-      "<div><h2>仕訳道場</h2>" +
-      '<p class="studio-sub">全単元・模試連動 <strong>' + allCards.length + "問</strong>。5要素思考ヒント・差分採点・SM-2復習に対応しています。</p></div>" +
+      "<div><h2>仕訳道場（大問・通し解答シート）</h2>" +
+      '<p class="studio-sub">全単元・模試連動 <strong>' + allProblems.length + "問（計" + totalEntries + "仕訳）</strong>。1問＝1枚の解答用紙として連続入力・一括採点できます。</p></div>" +
       '<div class="drill-stats-pills">' +
-      '<span class="meta-pill accent">習得済 ' + masteredCnt + " / " + allCards.length + "</span>" +
+      '<span class="meta-pill accent">習得済 ' + masteredCnt + " / " + allProblems.length + "</span>" +
       '<span class="meta-pill amber">期限 ' + dueCnt + "件</span>" +
       '<span class="meta-pill danger-pill">要復習 ' + weakCnt + "件</span>" +
       "</div></div>";
@@ -1872,7 +2084,7 @@
     html += '<select id="drillDocSelect" class="studio-select" aria-label="単元を選択">';
     html += '<option value="">すべての単元</option>';
     Array.from(docMap.values()).forEach((d) => {
-      html += '<option value="' + escapeHtml(d.id) + '"' + (drillState.docFilter === d.id ? " selected" : "") + ">" + escapeHtml(d.id + " (" + d.cnt + ")") + "</option>";
+      html += '<option value="' + escapeHtml(d.id) + '"' + (drillState.docFilter === d.id ? " selected" : "") + ">" + escapeHtml(d.id + " (" + d.cnt + "問)") + "</option>";
     });
     html += "</select>";
 
@@ -1884,21 +2096,22 @@
     html += "</select>";
 
     html += '<select id="drillLimitSelect" class="studio-select" aria-label="セット問数を選択">';
+    html += '<option value="3"' + (drillState.sessionLimit === 3 ? " selected" : "") + ">3問セット</option>";
+    html += '<option value="5"' + (drillState.sessionLimit === 5 ? " selected" : "") + ">5問セット</option>";
     html += '<option value="10"' + (drillState.sessionLimit === 10 ? " selected" : "") + ">10問セット</option>";
-    html += '<option value="20"' + (drillState.sessionLimit === 20 ? " selected" : "") + ">20問セット</option>";
-    html += '<option value="0"' + (drillState.sessionLimit === 0 ? " selected" : "") + ">無制限（全件）</option>";
+    html += '<option value="0"' + (drillState.sessionLimit === 0 ? " selected" : "") + ">無制限（全問）</option>";
     html += "</select>";
 
     html += '<div class="drill-quick-actions">';
     html += '<button type="button" class="mask-btn" id="drillShuffleBtn">シャッフル</button>';
-    html += '<button type="button" class="primary-btn" id="drillBlitzBtn">10問アタック</button>';
+    html += '<button type="button" class="primary-btn" id="drillBlitzBtn">5問アタック</button>';
     html += "</div></div></div></div>";
 
     if (drillState.blitzActive) {
       const dispNum = Math.min(drillState.blitzCount + 1, drillState.blitzTotal);
       html +=
         '<div class="blitz-banner">' +
-        "<span>タイムアタック中: <strong>" + dispNum + " / " + drillState.blitzTotal + "問目</strong>（正解 " + drillState.blitzScore + "）</span>" +
+        "<span>実戦アタック中: <strong>" + dispNum + " / " + drillState.blitzTotal + "問目</strong>（正解 " + drillState.blitzScore + "）</span>" +
         '<span id="blitzTimerBadge" class="inline-clock">' + CLOCK_SVG + " " + drillState.blitzSec + "秒</span>" +
         '<button type="button" class="mask-btn" id="blitzStopBtn">中断</button>' +
         "</div>";
@@ -1906,11 +2119,11 @@
       html += renderSessionProgressHtml(drillState.idx, drillState.deck.length);
     }
 
-    const card = drillState.deck[drillState.idx];
-    if (!card) {
+    const problem = drillState.deck[drillState.idx];
+    if (!problem) {
       html +=
-        '<div class="studio-card"><p>該当する仕訳カードがありません。フィルタ条件を変更してください。</p>' +
-        '<button type="button" class="primary-btn" id="resetDrillFilterBtn">全カードを表示</button></div>';
+        '<div class="studio-card"><p>該当する問題がありません。フィルタ条件を変更してください。</p>' +
+        '<button type="button" class="primary-btn" id="resetDrillFilterBtn">全問題を表示</button></div>';
       root.innerHTML = html;
       bindDrillToolbar();
       const rb = document.getElementById("resetDrillFilterBtn");
@@ -1918,11 +2131,13 @@
       return;
     }
 
-    html += renderJournalCardShellHtml(card, {
+    html += renderJournalProblemShellHtml(problem, {
       mode: drillState.mode,
-      rows: drillState.inputRows,
+      slotRows: drillState.slotRows,
+      activeSlot: drillState.activeSlot,
+      stemCollapsed: drillState.stemCollapsed,
       insertTarget: drillState.insertTarget,
-      focusedRow: drillState.lastFocusedCell.row,
+      focusedCell: drillState.lastFocusedCell,
       hintLevel: drillState.hintLevel,
       revealStep: drillState.revealStep,
       gradeResult: drillState.gradeResult,
@@ -1933,7 +2148,7 @@
     root.innerHTML = html;
     bindDrillToolbar();
 
-    bindJournalCardShell(root, card, {
+    bindJournalProblemShell(root, problem, {
       getMode: () => drillState.mode,
       setMode: (m) => {
         drillState.mode = m;
@@ -1941,8 +2156,12 @@
         saveState();
         renderDrillView();
       },
-      getRows: () => drillState.inputRows,
-      setRows: (r) => { drillState.inputRows = r; },
+      getSlotRows: () => drillState.slotRows,
+      setSlotRows: (r) => { drillState.slotRows = r; },
+      getActiveSlot: () => drillState.activeSlot,
+      setActiveSlot: (s) => { drillState.activeSlot = s; },
+      getStemCollapsed: () => drillState.stemCollapsed,
+      setStemCollapsed: (v) => { drillState.stemCollapsed = v; renderDrillView(); },
       getInsertTarget: () => drillState.insertTarget,
       setInsertTarget: (t) => { drillState.insertTarget = t; },
       getFocusedCell: () => drillState.lastFocusedCell,
@@ -1957,14 +2176,14 @@
       setGrade: (g, aq) => { drillState.gradeResult = g; drillState.autoAppliedQuality = aq; renderDrillView(); },
       onAfterGradeRate: (q) => {
         const elapsed = Math.round((Date.now() - drillState.cardStartedAt) / 1000);
-        recordSrsReview(card.id, q, elapsed);
-        if (q === 0) bumpMistakeCount(card.id);
-        advanceDrillCard(1, { cardId: card.id, type: "journal", ok: q >= 2, sec: elapsed });
+        recordSrsReview(problem.id, q, elapsed);
+        if (q === 0) bumpMistakeCount(problem.id);
+        advanceDrillCard(1, { cardId: problem.id, type: "journal", ok: q >= 2, sec: elapsed });
       },
       onNextWithCurrentGrade: () => {
         const elapsed = Math.round((Date.now() - drillState.cardStartedAt) / 1000);
         const q = typeof drillState.autoAppliedQuality === "number" ? drillState.autoAppliedQuality : 2;
-        advanceDrillCard(1, { cardId: card.id, type: "journal", ok: q >= 2, sec: elapsed });
+        advanceDrillCard(1, { cardId: problem.id, type: "journal", ok: q >= 2, sec: elapsed });
       },
       onPrev: () => advanceDrillCard(-1, null),
       onNext: () => advanceDrillCard(1, null),
@@ -3043,9 +3262,10 @@
     const regBtn = document.getElementById("cbtRegisterWrongBtn");
     if (regBtn) {
       regBtn.onclick = () => {
-        wrongCardIds.forEach((cid) => {
-          recordSrsReview(cid, 0);
-          bumpMistakeCount(cid);
+        const probIds = Array.from(new Set(wrongCardIds.map((cid) => getProblemIdForDrillCard(cid))));
+        probIds.forEach((pid) => {
+          recordSrsReview(pid, 0);
+          bumpMistakeCount(pid);
         });
         cbtState.wrongRegistered = true;
         renderCbtDojo(root);
@@ -3091,7 +3311,11 @@
           return;
         }
         if (e.key.toLowerCase() === "d" && drillState.mode === "input") {
-          if (applyBalanceFillToRows(drillState.inputRows, drillState.lastFocusedAmtCell)) renderDrillView();
+          const s = Math.min(drillState.activeSlot, drillState.slotRows.length - 1);
+          const fa = drillState.lastFocusedAmtCell;
+          if (applyBalanceFillToRows(drillState.slotRows[s], fa && fa.slot === s ? fa : { row: 0, field: "cAmt" })) {
+            renderDrillView();
+          }
           return;
         }
         if (drillState.gradeResult && ["1", "2", "3", "4"].includes(e.key)) {
@@ -3577,7 +3801,7 @@
 
     const units = DATA.items.filter((it) => it.part !== "guide");
     const masteredUnits = units.filter(isDocMastered);
-    const allDrills = DATA.drills || [];
+    const allDrills = getJournalProblems();
     const allCalc = DATA.calcDrills || [];
     const allTheory = DATA.theoryDrills || [];
     const allAll = [].concat(allDrills, allCalc, allTheory);
@@ -4342,7 +4566,7 @@
       else if (mode === "cheat") renderCheatView();
     },
     openUnitDojo(docId) {
-      const hasJournal = (DATA.drills || []).some((c) => c.docId === docId);
+      const hasJournal = getJournalProblems().some((p) => p.docId === docId);
       const hasCalc = (DATA.calcDrills || []).some((c) => c.docId === docId);
       drillState.hasInitializedTab = true;
       if (hasJournal) {

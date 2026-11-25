@@ -1,4 +1,4 @@
-const CACHE_NAME = "boki-1kyu-studio-v7";
+const CACHE_NAME = "boki-1kyu-studio-v8";
 const PRECACHE_URLS = [
   "./",
   "./index.html",

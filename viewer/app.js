@@ -4,6 +4,8 @@
   const DATA = window.CURRICULUM_DATA;
   const STORAGE_KEY = "boki1kyu_study_state_v1";
 
+  let cachedJournalProblems = null;
+  let cachedCardToProbMap = null;
   const state = loadState();
   let navMode = "part"; // "part" | "line"
   let studioMode = "reader"; // "reader" | "drill" | "sim" | "analytics" | "cheat"
@@ -45,13 +47,104 @@
     };
   }
 
+  function buildJournalProblemCache() {
+    if (cachedJournalProblems) return;
+    const drills = (DATA && DATA.drills) || [];
+    const groups = [];
+    const keyToGroup = new Map();
+    drills.forEach((c) => {
+      const k = (c.docId || "") + "||" + (c.questionTitle || c.section || "");
+      if (!keyToGroup.has(k)) {
+        const arr = [];
+        keyToGroup.set(k, arr);
+        groups.push(arr);
+      }
+      keyToGroup.get(k).push(c);
+    });
+
+    const problems = [];
+    const cardMap = new Map();
+    const docGroupIdx = {};
+
+    groups.forEach((cards) => {
+      const first = cards[0];
+      const isIndependentExamList = first.part === "exam" && String(first.questionTitle || "").includes("第1問") && cards.length > 6;
+      if (cards.length === 1 || isIndependentExamList) {
+        cards.forEach((c) => {
+          const prob = {
+            id: c.id,
+            isMulti: false,
+            childIds: [c.id],
+            docId: c.docId,
+            docTitle: c.docTitle,
+            part: c.part,
+            line: c.line || [],
+            section: c.section,
+            questionTitle: c.questionTitle,
+            questionBody: c.questionBody,
+            explanation: c.explanation || "",
+            entryCount: 1,
+            entries: [{
+              id: c.id,
+              targetLabel: c.targetLabel || c.prompt || "1",
+              focusLine: c.focusLine || "",
+              rows: c.rows || []
+            }]
+          };
+          problems.push(prob);
+          cardMap.set(c.id, prob.id);
+        });
+      } else {
+        const dId = first.docId || "DOC";
+        const gNum = docGroupIdx[dId] || 0;
+        docGroupIdx[dId] = gNum + 1;
+        const probId = "PROB::" + dId + "::" + gNum;
+        const prob = {
+          id: probId,
+          isMulti: true,
+          childIds: cards.map((c) => c.id),
+          docId: first.docId,
+          docTitle: first.docTitle,
+          part: first.part,
+          line: first.line || [],
+          section: first.section,
+          questionTitle: first.questionTitle || first.section,
+          questionBody: first.questionBody,
+          explanation: cards.map((c) => c.explanation).filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join("\n"),
+          entryCount: cards.length,
+          entries: cards.map((c) => ({
+            id: c.id,
+            targetLabel: c.targetLabel || c.prompt || "",
+            focusLine: c.focusLine || "",
+            rows: c.rows || []
+          }))
+        };
+        problems.push(prob);
+        cards.forEach((c) => cardMap.set(c.id, probId));
+      }
+    });
+
+    cachedJournalProblems = problems;
+    cachedCardToProbMap = cardMap;
+  }
+
+  function getJournalProblems() {
+    buildJournalProblemCache();
+    return cachedJournalProblems;
+  }
+
+  function getProblemIdForDrillCard(cardId) {
+    buildJournalProblemCache();
+    return cachedCardToProbMap.get(cardId) || cardId;
+  }
+
   function migrateSrsState(st) {
     if (!st || typeof st !== "object") return st;
     if (!st.srs || typeof st.srs !== "object") st.srs = {};
     if (!st.mistakes || typeof st.mistakes !== "object") st.mistakes = {};
     if (!st.studyLog || typeof st.studyLog !== "object") st.studyLog = {};
     if (!Array.isArray(st.cbtHistory)) st.cbtHistory = [];
-    st.prefs = Object.assign({ drillMode: "input", cbtView: "single", sessionLimit: 10 }, st.prefs || {});
+    st.prefs = Object.assign({ drillMode: "input", cbtView: "single", sessionLimit: 5 }, st.prefs || {});
     if (!st.reviews || typeof st.reviews !== "object") st.reviews = {};
     if (!st.checks || typeof st.checks !== "object") st.checks = {};
     if (!st.notes || typeof st.notes !== "object") st.notes = {};
@@ -101,6 +194,67 @@
         if (typeof rec.lapses !== "number") rec.lapses = rec.level === 0 ? 1 : 0;
       }
     });
+
+    // Consolidate legacy per-entry child SRS & mistakes into parent problem IDs
+    getJournalProblems().forEach((prob) => {
+      if (!prob.isMulti) return;
+      const childSrs = prob.childIds.map((cid) => st.srs[cid]).filter(Boolean);
+      if (childSrs.length > 0) {
+        const existing = st.srs[prob.id];
+        const pool = existing ? [existing].concat(childSrs) : childSrs;
+        let minLevel = 2;
+        let minReps = 99;
+        let minInterval = 9999;
+        let minEase = 3.0;
+        let sumLapses = existing ? (existing.lapses || 0) : 0;
+        childSrs.forEach((r) => { sumLapses += r.lapses || 0; });
+        let earliestDueMs = Infinity;
+        let latestUpdMs = 0;
+        pool.forEach((r) => {
+          if (typeof r.level === "number") minLevel = Math.min(minLevel, r.level);
+          if (typeof r.reps === "number") minReps = Math.min(minReps, r.reps);
+          if (typeof r.intervalDays === "number") minInterval = Math.min(minInterval, r.intervalDays);
+          if (typeof r.ease === "number") minEase = Math.min(minEase, r.ease);
+          const dMs = r.dueAt ? Date.parse(r.dueAt) : NaN;
+          if (Number.isFinite(dMs)) earliestDueMs = Math.min(earliestDueMs, dMs);
+          const uMs = r.updatedAt ? Date.parse(r.updatedAt) : NaN;
+          if (Number.isFinite(uMs)) latestUpdMs = Math.max(latestUpdMs, uMs);
+        });
+        st.srs[prob.id] = {
+          level: minLevel,
+          reps: minReps === 99 ? 0 : minReps,
+          intervalDays: minInterval === 9999 ? 0 : minInterval,
+          ease: minEase,
+          lapses: sumLapses,
+          updatedAt: new Date(latestUpdMs || Date.now()).toISOString(),
+          dueAt: new Date(Number.isFinite(earliestDueMs) ? earliestDueMs : Date.now()).toISOString()
+        };
+        prob.childIds.forEach((cid) => { delete st.srs[cid]; });
+      }
+
+      const childMistakes = prob.childIds.map((cid) => st.mistakes[cid]).filter(Boolean);
+      if (childMistakes.length > 0) {
+        const cur = st.mistakes[prob.id] || { reasons: [], note: "", count: 0, lastWrongAt: "" };
+        const reasonSet = new Set(cur.reasons || []);
+        const notes = cur.note ? [cur.note] : [];
+        let count = cur.count || 0;
+        let lastWrongAt = cur.lastWrongAt || "";
+        childMistakes.forEach((m) => {
+          (m.reasons || []).forEach((r) => reasonSet.add(r));
+          if (m.note && !notes.includes(m.note)) notes.push(m.note);
+          count += m.count || 0;
+          if (m.lastWrongAt && m.lastWrongAt > lastWrongAt) lastWrongAt = m.lastWrongAt;
+        });
+        st.mistakes[prob.id] = {
+          reasons: Array.from(reasonSet),
+          note: notes.join(" / "),
+          count,
+          lastWrongAt
+        };
+        prob.childIds.forEach((cid) => { delete st.mistakes[cid]; });
+      }
+    });
+
     return st;
   }
 
@@ -284,11 +438,11 @@
 
   function getDueSummary(nowMs) {
     const curNow = nowMs || Date.now();
-    const dueJournal = (DATA.drills || []).filter((c) => isCardDue(c.id, curNow));
+    const dueJournal = getJournalProblems().filter((p) => isCardDue(p.id, curNow));
     const dueCalc = (DATA.calcDrills || []).filter((c) => isCardDue(c.id, curNow));
     const dueTheory = (DATA.theoryDrills || []).filter((c) => isCardDue(c.id, curNow));
     const allDueCards = [
-      ...dueJournal.map((c) => ({ kind: "journal", card: c })),
+      ...dueJournal.map((p) => ({ kind: "journal", card: p })),
       ...dueCalc.map((c) => ({ kind: "calc", card: c })),
       ...dueTheory.map((c) => ({ kind: "theory", card: c }))
     ];
@@ -768,9 +922,14 @@
     }
     const status = getUnitReviewStatus(doc);
     const docRev = state.reviews[doc.id] || {};
-    const jCount = (DATA.drills || []).filter((c) => c.docId === doc.id).length;
+    const jProblems = getJournalProblems().filter((p) => p.docId === doc.id);
+    const jCount = jProblems.length;
+    const jEntries = jProblems.reduce((sum, p) => sum + p.entryCount, 0);
     const cCount = (DATA.calcDrills || []).filter((c) => c.docId === doc.id).length;
     const drillTotal = jCount + cCount;
+    const drillBtnLabel = jCount > 0 && jEntries > jCount
+      ? "この単元の道場（" + drillTotal + "問・" + jEntries + "仕訳）を解く"
+      : "この単元の道場（" + drillTotal + "問）を解く";
 
     let dueLine = "";
     if (status.nextStage === "day0") {
@@ -798,7 +957,7 @@
       '<div class="doc-bottom-sub">' + escapeHtml(dueLine) + "</div>" +
       '<div class="doc-bottom-guide">' + escapeHtml(status.guide) + "</div></div>" +
       (drillTotal > 0
-        ? '<button type="button" class="primary-btn" id="bottomUnitDojoBtn">この単元の道場（' + drillTotal + "問）を解く</button>"
+        ? '<button type="button" class="primary-btn" id="bottomUnitDojoBtn">' + escapeHtml(drillBtnLabel) + "</button>"
         : "") +
       "</div>" +
       '<div class="doc-bottom-days">' +
@@ -881,8 +1040,8 @@
 
     const unitWeakCardCount = (docId) => {
       let n = 0;
-      (DATA.drills || []).forEach((c) => {
-        if (c.docId === docId && (isCardDue(c.id, nowMs) || isCardLeech(c.id))) n++;
+      getJournalProblems().forEach((p) => {
+        if (p.docId === docId && (isCardDue(p.id, nowMs) || isCardLeech(p.id))) n++;
       });
       (DATA.calcDrills || []).forEach((c) => {
         if (c.docId === docId && (isCardDue(c.id, nowMs) || isCardLeech(c.id))) n++;
@@ -1633,6 +1792,8 @@
       updateDueBadge,
       toggleDocReviewStage,
       renderDocBottomReviewBar,
+      getJournalProblems,
+      getProblemIdForDrillCard,
       renderSidebar
     };
   }
